@@ -20,9 +20,9 @@ public class SmokeTestContext {
      *
      * @return A list of results from each smoke test.
      *
-     * @throws InterruptedException
+     * @throws SmokeTestException
      */
-    public List<SmokeTestResult> runSmokeTests(
+    public static List<SmokeTestResult> runSmokeTests(
             final List<SmokeTestStrategy> smokeTestStrategies,
             final int threadPoolSize,
             final long timeoutInSeconds) throws SmokeTestException {

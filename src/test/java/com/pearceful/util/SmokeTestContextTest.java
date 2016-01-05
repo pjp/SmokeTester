@@ -22,11 +22,10 @@ public class SmokeTestContextTest extends TestCase {
 
         SimpleBaseSmokeTestStrategy simpleBaseSmokeTestStrategy = new SimpleBaseSmokeTestStrategy(id, smokeTestResult);
 
-        SmokeTestContext smokeTestContext = new SmokeTestContext();
         List<SmokeTestStrategy> smokeTestStrategies = new ArrayList<>();
         smokeTestStrategies.add(simpleBaseSmokeTestStrategy);
 
-        List<SmokeTestResult> smokeTestResults = smokeTestContext.runSmokeTests(smokeTestStrategies, 1, 2);
+        List<SmokeTestResult> smokeTestResults = SmokeTestContext.runSmokeTests(smokeTestStrategies, 1, 2);
 
         assertNotNull(smokeTestResults);
         assertEquals(1, smokeTestResults.size());
@@ -48,11 +47,10 @@ public class SmokeTestContextTest extends TestCase {
         SimpleBaseSmokeTestStrategy simpleBaseSmokeTestStrategy =
                 new SimpleBaseSmokeTestStrategy(id, smokeTestResult, true, timeout);
 
-        SmokeTestContext smokeTestContext = new SmokeTestContext();
         List<SmokeTestStrategy> smokeTestStrategies = new ArrayList<>();
         smokeTestStrategies.add(simpleBaseSmokeTestStrategy);
 
-        List<SmokeTestResult> results = smokeTestContext.runSmokeTests(smokeTestStrategies, 1, timeout);
+        List<SmokeTestResult> results = SmokeTestContext.runSmokeTests(smokeTestStrategies, 1, timeout);
         SmokeTestResult retrievedSmokeTestResult = results.get(0);
         assertEquals(SmokeTestResult.STATE.ERROR, retrievedSmokeTestResult.getState());
         assertEquals(msg, retrievedSmokeTestResult.getMessage());
@@ -68,11 +66,10 @@ public class SmokeTestContextTest extends TestCase {
         SimpleBaseSmokeTestStrategy simpleBaseSmokeTestStrategy =
                 new SimpleBaseSmokeTestStrategy(id, smokeTestResult, false, timeout * 2);
 
-        SmokeTestContext smokeTestContext = new SmokeTestContext();
         List<SmokeTestStrategy> smokeTestStrategies = new ArrayList<>();
         smokeTestStrategies.add(simpleBaseSmokeTestStrategy);
 
-        List<SmokeTestResult> results = smokeTestContext.runSmokeTests(smokeTestStrategies, 1, timeout);
+        List<SmokeTestResult> results = SmokeTestContext.runSmokeTests(smokeTestStrategies, 1, timeout);
         SmokeTestResult retrievedSmokeTestResult = results.get(0);
         assertEquals(SmokeTestResult.STATE.ERROR, retrievedSmokeTestResult.getState());
         assertTrue(retrievedSmokeTestResult.getMessage().contains("CancellationException"));
@@ -96,10 +93,8 @@ public class SmokeTestContextTest extends TestCase {
                 );
 
 
-        SmokeTestContext smokeTestContext = new SmokeTestContext();
-
         List<SmokeTestResult> smokeTestResults =
-                smokeTestContext.runSmokeTests(smokeTestStrategies, threadPoolSize, timeoutSeconds);
+                SmokeTestContext.runSmokeTests(smokeTestStrategies, threadPoolSize, timeoutSeconds);
 
         assertNotNull(smokeTestResults);
         assertEquals(strategyCount, smokeTestResults.size());
@@ -141,10 +136,8 @@ public class SmokeTestContextTest extends TestCase {
                                 timeoutSeconds + 1))
                 );
 
-        SmokeTestContext smokeTestContext = new SmokeTestContext();
-
         List<SmokeTestResult> smokeTestResults =
-                smokeTestContext.runSmokeTests(smokeTestStrategies, threadPoolSize, timeoutSeconds);
+                SmokeTestContext.runSmokeTests(smokeTestStrategies, threadPoolSize, timeoutSeconds);
 
         assertNotNull(smokeTestResults);
 
