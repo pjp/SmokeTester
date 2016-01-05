@@ -78,7 +78,7 @@ public class SmokeTestContextTest extends TestCase {
         assertTrue(retrievedSmokeTestResult.getMessage().contains("CancellationException"));
     }
 
-    public void testMultipleContexts() throws InterruptedException, SmokeTestException {
+    public void testMultipleContextsAllGood() throws InterruptedException, SmokeTestException {
         String msg  = "message1";
         int threadPoolSize  =   3;
         int timeoutSeconds  =   10;
@@ -111,6 +111,58 @@ public class SmokeTestContextTest extends TestCase {
                     .stream()
                     .filter(s -> s.getState().equals(SmokeTestResult.STATE.PASS))
                     .count());
+    }
+
+    public void testMultipleContextsSomeGoodSomeTimeout() throws InterruptedException, SmokeTestException {
+        String msg  = "message1";
+        int threadPoolSize      =   5;
+        int timeoutSeconds      =   2;
+        int goodStrategyCount   = threadPoolSize * 2;
+        int badStrategyCount    = threadPoolSize;
+
+        // Generate a list of test strategies
+        List<SmokeTestStrategy> smokeTestStrategies = new ArrayList<>();
+
+        IntStream.range(1, goodStrategyCount + 1)
+                .forEach(i ->
+                        smokeTestStrategies.add(new
+                                SimpleBaseSmokeTestStrategy(
+                                "" + i,
+                                new SmokeTestResult("" + i, SmokeTestResult.STATE.PASS, 0, msg + i)))
+                );
+
+        IntStream.range(1, badStrategyCount + 1)
+                .forEach(i ->
+                        smokeTestStrategies.add(new
+                                SimpleBaseSmokeTestStrategy(
+                                "" + i,
+                                new SmokeTestResult("" + i, SmokeTestResult.STATE.PASS, timeoutSeconds, msg + i),
+                                false,
+                                timeoutSeconds + 1))
+                );
+
+        SmokeTestContext smokeTestContext = new SmokeTestContext();
+
+        List<SmokeTestResult> smokeTestResults =
+                smokeTestContext.runSmokeTests(smokeTestStrategies, threadPoolSize, timeoutSeconds);
+
+        assertNotNull(smokeTestResults);
+
+        // Make sure there are some PASS's
+        assertEquals(
+                goodStrategyCount,
+                smokeTestResults
+                        .stream()
+                        .filter(s -> s.getState().equals(SmokeTestResult.STATE.PASS))
+                        .count());
+
+        // Make sure there are some ERROR's
+        assertEquals(
+                badStrategyCount,
+                smokeTestResults
+                        .stream()
+                        .filter(s -> s.getState().equals(SmokeTestResult.STATE.ERROR))
+                        .count());
     }
 
     class SimpleBaseSmokeTestStrategy extends BaseSmokeTestStrategy {
