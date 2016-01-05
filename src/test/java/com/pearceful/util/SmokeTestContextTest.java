@@ -105,7 +105,8 @@ public class SmokeTestContextTest extends TestCase {
         assertEquals(strategyCount, smokeTestResults.size());
 
         // Make sure there are only PASS's
-        assertEquals(strategyCount,
+        assertEquals(
+                strategyCount,
                 smokeTestResults
                     .stream()
                     .filter(s -> s.getState().equals(SmokeTestResult.STATE.PASS))
