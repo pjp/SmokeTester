@@ -1,11 +1,8 @@
 package com.pearceful.util;
 
 import junit.framework.TestCase;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.Thread.sleep;
