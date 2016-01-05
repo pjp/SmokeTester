@@ -3,18 +3,18 @@ package com.pearceful.util;
 /**
  * Created by pjp on 2015-12-26.
  *
- * An immutable result
+ * An immutable result after trying to run a smoke test
  */
 public class SmokeTestResult implements Comparable<SmokeTestResult> {
-    private String id;          // Unique id of the test context this result is from.
-    private STATE state;        // The state of the test result
-    private long elapsedNanoSeconds;
-    private String message;     // A result (or exception message)
+    private String id;                  // Unique id of the test context this result is from.
+    private STATE state;                // The state of the test result
+    private long elapsedNanoSeconds;    // How long the test actually ran for.
+    private String message;             // A result (or exception message)
 
     public enum STATE {
-        ERROR,
-        PASS,
-        FAIL
+        ERROR,  // A problem occured while trying to run the test
+        PASS,   // The test ran and (all) the test conditions passed
+        FAIL    // The test ran, but the test condition(s) failed
     }
 
     public SmokeTestResult(

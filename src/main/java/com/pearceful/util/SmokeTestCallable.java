@@ -6,6 +6,8 @@ import java.util.concurrent.Callable;
 
 /**
  * Created by pjp on 2015-12-27.
+ *
+ * A Callable to execute the defined strategy.
  */
 public class SmokeTestCallable implements Callable {
     private static final Logger LOGGER                  = Logger.getLogger(SmokeTestCallable.class);
@@ -21,7 +23,7 @@ public class SmokeTestCallable implements Callable {
     }
 
     public SmokeTestResult call() throws Exception {
-        SmokeTestResult smokeTestResult = null ;
+        SmokeTestResult smokeTestResult ;
         long startNs                    = System.nanoTime();
 
         try {
@@ -32,15 +34,15 @@ public class SmokeTestCallable implements Callable {
             smokeTestStrategy.postExecute();
 
             smokeTestResult = smokeTestStrategy.validate();
-        } catch (Exception e) {
-            LOGGER.warn(String.format("call: Problem running test [%s]", smokeTestStrategy), e);
+        } catch (Throwable t) {
+            LOGGER.warn(String.format("call: Problem running test [%s]", smokeTestStrategy), t);
 
             smokeTestResult =
                     new SmokeTestResult(
                             smokeTestStrategy.getId(),
                             SmokeTestResult.STATE.ERROR,
                             System.nanoTime() - startNs,
-                            e.getMessage());
+                            t.getMessage());
         }
 
         return smokeTestResult;

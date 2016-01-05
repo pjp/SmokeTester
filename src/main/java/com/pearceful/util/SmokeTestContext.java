@@ -7,6 +7,9 @@ import java.util.concurrent.*;
 
 /**
  * Created by pjp on 2015-12-26.
+ *
+ * A generic Smoke test harness using the Strategy pattern, the actual test is encapsulated as a Strategy, see
+ * the SmokeTestStrategy interface and BaseSmokeTestStrategy abstract class.
  */
 public class SmokeTestContext {
     private static final Logger LOGGER                  = Logger.getLogger(SmokeTestContext.class);
@@ -45,40 +48,44 @@ public class SmokeTestContext {
 
         ////////////////////////////
         // Build a list of Callables
-        List<Callable<SmokeTestResult>> smokeTestCallables = new ArrayList<Callable<SmokeTestResult>>();
+        List<Callable<SmokeTestResult>> smokeTestCallables  = new ArrayList<Callable<SmokeTestResult>>();
 
-        smokeTestStrategies
-                .stream()
-                .map( smokeTestStratgy -> {
-                    return new SmokeTestCallable(smokeTestStratgy);
-                })
-                .forEach(smokeTestCallables::add);
+        /////////////////////////////////
+        // Build an empty list of results
+        List<SmokeTestResult> smokeTestResults              = new ArrayList<SmokeTestResult>();
 
-        //////////////////////
-        // Create the executor
+        ////////////////////////////////////////////////
+        // Create the (possibly multi-threaded) executor
         ExecutorService smokeTestExecutor       = Executors.newFixedThreadPool(threadPoolSize);
-        List<SmokeTestResult> smokeTestResults  = new ArrayList<SmokeTestResult>();
 
-        ///////////////////////////////
-        // Do the work (multi-threaded)
-        //
-        // What happens if one or more smokeTestCallables fails?, we want to record it's
-        // id and carry on with the rest
-        //
         try {
+            smokeTestStrategies
+                    .stream()
+                    .map( smokeTestStratgy -> {
+                        return new SmokeTestCallable(smokeTestStratgy);
+                    })
+                    .forEach(smokeTestCallables::add);
+
+            ////////////////////////////////////////
+            // Do the work (possibly multi-threaded)
+            //
+            // What happens if one or more smokeTestCallables fails?, we want to record it's
+            // id and carry on with the rest
+            //
             smokeTestExecutor.invokeAll(smokeTestCallables, timeoutInSeconds, TimeUnit.SECONDS)
                     .stream()
                     .map( future -> {
                         try {
                             return future.get();
-                        } catch (Throwable e) {
-                            LOGGER.error("runSmokeTests", e);
+                        } catch (Throwable t) {
+                            // Should not get here as SmokeTestCallable.call traps all Throwables, but ..........
+                            LOGGER.error("runSmokeTests", t);
 
                             return new SmokeTestResult(
-                                    future.toString(),  // Don't know the id at this point :-(
+                                    future.toString(),  // Can't get the id at this point :-(
                                     SmokeTestResult.STATE.ERROR,
                                     0L,
-                                    e.toString());
+                                    t.toString());
                         }
                     })
                     .forEach(smokeTestResults::add);
