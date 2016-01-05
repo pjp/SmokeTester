@@ -3,7 +3,10 @@ package com.pearceful.util;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static java.lang.Thread.sleep;
 
@@ -73,6 +76,40 @@ public class SmokeTestContextTest extends TestCase {
         SmokeTestResult retrievedSmokeTestResult = results.get(0);
         assertEquals(SmokeTestResult.STATE.ERROR, retrievedSmokeTestResult.getState());
         assertTrue(retrievedSmokeTestResult.getMessage().contains("CancellationException"));
+    }
+
+    public void testMultipleContexts() throws InterruptedException, SmokeTestException {
+        String msg  = "message1";
+        int threadPoolSize  =   3;
+        int timeoutSeconds  =   10;
+        int strategyCount = threadPoolSize * 2;
+
+        // Generate a list of test strategies
+        List<SmokeTestStrategy> smokeTestStrategies = new ArrayList<>();
+
+        IntStream.range(1, strategyCount + 1)
+                .forEach(i ->
+                        smokeTestStrategies.add(new
+                                SimpleBaseSmokeTestStrategy(
+                                "" + i,
+                                new SmokeTestResult("" + i, SmokeTestResult.STATE.PASS, 0, msg + i)))
+                );
+
+
+        SmokeTestContext smokeTestContext = new SmokeTestContext();
+
+        List<SmokeTestResult> smokeTestResults =
+                smokeTestContext.runSmokeTests(smokeTestStrategies, threadPoolSize, timeoutSeconds);
+
+        assertNotNull(smokeTestResults);
+        assertEquals(strategyCount, smokeTestResults.size());
+
+        // Make sure there are only PASS's
+        assertEquals(strategyCount,
+                smokeTestResults
+                    .stream()
+                    .filter(s -> s.getState().equals(SmokeTestResult.STATE.PASS))
+                    .count());
     }
 
     class SimpleBaseSmokeTestStrategy extends BaseSmokeTestStrategy {
