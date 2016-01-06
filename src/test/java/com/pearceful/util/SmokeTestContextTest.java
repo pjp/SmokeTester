@@ -1,7 +1,7 @@
 package com.pearceful.util;
 
 import junit.framework.TestCase;
-import java.util.ArrayList;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,18 +13,26 @@ import static java.lang.Thread.sleep;
  * Created by pjp on 2015-12-26.
  */
 public class SmokeTestContextTest extends TestCase {
-    public void testSimpleContext() throws InterruptedException, SmokeTestException {
-        String id = "1";
-        String msg  = "message1";
+    public void testGoodSimpleStrategy() throws InterruptedException, SmokeTestException {
+        String id                   = "1";
+        String msg                  = "message1";
+        int threadPoolSize          = 1;
+        int timeoutInSeconds        = 2;
         SmokeTestResult.STATE state = SmokeTestResult.STATE.PASS;
-        SmokeTestResult smokeTestResult = new SmokeTestResult(id, state, 0, msg);
+        SmokeTestResult mockSmokeTestResult = new SmokeTestResult(id, state, 0, msg);
 
-        SimpleBaseSmokeTestStrategy simpleBaseSmokeTestStrategy = new SimpleBaseSmokeTestStrategy(id, smokeTestResult);
+        // Build a strategy smoke tests that will run in less that the
+        // timeout for the overall test to complete in
+        MockSimpleBaseSmokeTestStrategy mockSimpleBaseSmokeTestStrategy =
+                new MockSimpleBaseSmokeTestStrategy(id, mockSmokeTestResult);
 
         Set<SmokeTestStrategy> smokeTestStrategies = new HashSet<>();
-        smokeTestStrategies.add(simpleBaseSmokeTestStrategy);
+        smokeTestStrategies.add(mockSimpleBaseSmokeTestStrategy);
 
-        List<SmokeTestResult> smokeTestResults = SmokeTestContext.runSmokeTests(smokeTestStrategies, 1, 2);
+        //////////////////////////////////////////////////////////////
+        // Execute the strategy smoke test(s) and gather the result(s)
+        List<SmokeTestResult> smokeTestResults =
+                SmokeTestContext.runSmokeTests(smokeTestStrategies, threadPoolSize, timeoutInSeconds);
 
         assertNotNull(smokeTestResults);
         assertEquals(1, smokeTestResults.size());
@@ -36,18 +44,19 @@ public class SmokeTestContextTest extends TestCase {
 
     }
 
-    public void testSimpleContextWithForcedException() throws SmokeTestException {
+    public void testSimpleStrategyWithForcedException() throws SmokeTestException {
         int timeout = 1;
         String id = "1";
         String msg  = "forcedException";
         SmokeTestResult.STATE state = SmokeTestResult.STATE.ERROR;
-        SmokeTestResult smokeTestResult = new SmokeTestResult(id, state, 0, msg);
+        SmokeTestResult mockSmokeTestResult = new SmokeTestResult(id, state, 0, msg);
 
-        SimpleBaseSmokeTestStrategy simpleBaseSmokeTestStrategy =
-                new SimpleBaseSmokeTestStrategy(id, smokeTestResult, true, timeout);
+        // Build a strategy smoke test that will throw an exception
+        MockSimpleBaseSmokeTestStrategy mockSimpleBaseSmokeTestStrategy =
+                new MockSimpleBaseSmokeTestStrategy(id, mockSmokeTestResult, true, timeout);
 
         Set<SmokeTestStrategy> smokeTestStrategies = new HashSet<>();
-        smokeTestStrategies.add(simpleBaseSmokeTestStrategy);
+        smokeTestStrategies.add(mockSimpleBaseSmokeTestStrategy);
 
         List<SmokeTestResult> results = SmokeTestContext.runSmokeTests(smokeTestStrategies, 1, timeout);
         SmokeTestResult retrievedSmokeTestResult = results.get(0);
@@ -55,18 +64,20 @@ public class SmokeTestContextTest extends TestCase {
         assertEquals(msg, retrievedSmokeTestResult.getMessage());
     }
 
-    public void testSimpleContextWithTimeout() throws SmokeTestException {
+    public void testSimpleStrategyWithTimeout() throws SmokeTestException {
         int timeout = 1;
         String id = "1";
         String msg  = "forcedException";
         SmokeTestResult.STATE state = SmokeTestResult.STATE.ERROR;
-        SmokeTestResult smokeTestResult = new SmokeTestResult(id, state, 0, msg);
+        SmokeTestResult mockSmokeTestResult = new SmokeTestResult(id, state, 0, msg);
 
-        SimpleBaseSmokeTestStrategy simpleBaseSmokeTestStrategy =
-                new SimpleBaseSmokeTestStrategy(id, smokeTestResult, false, timeout * 2);
+        // Build a strategy smoke test that will run longer that the
+        // timeout for the overall test to complete in
+        MockSimpleBaseSmokeTestStrategy mockSimpleBaseSmokeTestStrategy =
+                new MockSimpleBaseSmokeTestStrategy(id, mockSmokeTestResult, false, timeout * 2);
 
         Set<SmokeTestStrategy> smokeTestStrategies = new HashSet<>();
-        smokeTestStrategies.add(simpleBaseSmokeTestStrategy);
+        smokeTestStrategies.add(mockSimpleBaseSmokeTestStrategy);
 
         List<SmokeTestResult> results = SmokeTestContext.runSmokeTests(smokeTestStrategies, 1, timeout);
         SmokeTestResult retrievedSmokeTestResult = results.get(0);
@@ -74,7 +85,7 @@ public class SmokeTestContextTest extends TestCase {
         assertTrue(retrievedSmokeTestResult.getMessage().contains("CancellationException"));
     }
 
-    public void testMultipleContextsAllGood() throws InterruptedException, SmokeTestException {
+    public void testMultipleStrategiesAllGood() throws InterruptedException, SmokeTestException {
         String msg  = "message1";
         int threadPoolSize  =   3;
         int timeoutSeconds  =   10;
@@ -83,10 +94,12 @@ public class SmokeTestContextTest extends TestCase {
         // Generate a list of test strategies
         Set<SmokeTestStrategy> smokeTestStrategies = new HashSet<>();
 
+        // Build a list of strategy smoke tests that (each) will run in less that the
+        // timeout for the overall test to complete in
         IntStream.range(1, strategyCount + 1)
                 .forEach(i ->
                         smokeTestStrategies.add(new
-                                SimpleBaseSmokeTestStrategy(
+                                MockSimpleBaseSmokeTestStrategy(
                                 "G" + i,
                                 new SmokeTestResult("G" + i, SmokeTestResult.STATE.PASS, 0, msg + i)))
                 );
@@ -107,7 +120,7 @@ public class SmokeTestContextTest extends TestCase {
                     .count());
     }
 
-    public void testMultipleContextsSomeGoodSomeTimeout() throws InterruptedException, SmokeTestException {
+    public void testMultipleStrategiesSomeGoodSomeTimeout() throws InterruptedException, SmokeTestException {
         String msg  = "message1";
         int threadPoolSize      =   5;
         int timeoutSeconds      =   2;
@@ -117,18 +130,22 @@ public class SmokeTestContextTest extends TestCase {
         // Generate a list of test strategies
         Set<SmokeTestStrategy> smokeTestStrategies = new HashSet<>();
 
+        // Build a list of strategy smoke tests that (each) will run in less that the
+        // timeout for the overall test to complete in
         IntStream.range(1, goodStrategyCount + 1)
                 .forEach(i ->
                         smokeTestStrategies.add(new
-                                SimpleBaseSmokeTestStrategy(
+                                MockSimpleBaseSmokeTestStrategy(
                                 "G" + i,
                                 new SmokeTestResult("G" + i, SmokeTestResult.STATE.PASS, 0, msg + i)))
                 );
 
+        // Build a list of strategy smoke tests that (each) will run longer that the
+        // timeout for the overall test to complete in
         IntStream.range(1, badStrategyCount + 1)
                 .forEach(i ->
                         smokeTestStrategies.add(new
-                                SimpleBaseSmokeTestStrategy(
+                                MockSimpleBaseSmokeTestStrategy(
                                 "B" + i,
                                 new SmokeTestResult("B" + i, SmokeTestResult.STATE.PASS, timeoutSeconds + 2, msg + i),
                                 false,
@@ -157,17 +174,32 @@ public class SmokeTestContextTest extends TestCase {
                         .count());
     }
 
-    class SimpleBaseSmokeTestStrategy extends BaseSmokeTestStrategy {
+    /**
+     * A Mock implementation of the SmokeTestStrategy interface.
+     *
+     */
+    class MockSimpleBaseSmokeTestStrategy extends BaseSmokeTestStrategy {
         private boolean throwException;
         private int delayInSeconds;
 
-        public SimpleBaseSmokeTestStrategy(
+        /**
+         * @param id A unique id for the test
+         * @param smokeTestResult A mock result to pass back when validate is called
+         */
+        public MockSimpleBaseSmokeTestStrategy(
                 final String id,
                 final SmokeTestResult smokeTestResult) {
             this(id, smokeTestResult, false, 0);
         }
 
-        public SimpleBaseSmokeTestStrategy(
+        /**
+         *
+         * @param id A unique id for the test
+         * @param smokeTestResult A mock result to pass back when validate is called
+         * @param throwException true to throw an Exception when execute is called; else false
+         * @param delayInSeconds How long to emulate some work being done
+         */
+        public MockSimpleBaseSmokeTestStrategy(
                 final String id,
                 final SmokeTestResult smokeTestResult,
                 final boolean throwException,
@@ -178,6 +210,11 @@ public class SmokeTestContextTest extends TestCase {
             this.delayInSeconds     = delayInSeconds;
         }
 
+        /**
+         * Simulate doing some work
+         *
+         * @throws SmokeTestException
+         */
         public void execute() throws SmokeTestException {
             if(throwException) {
                 throw new RuntimeException(smokeTestResult.getMessage());
@@ -194,6 +231,11 @@ public class SmokeTestContextTest extends TestCase {
             }
         }
 
+        /**
+         * Retrieve the smoke test result
+         *
+         * @return A smoke test result
+         */
         public SmokeTestResult validate() {
 
             return smokeTestResult;
