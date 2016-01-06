@@ -35,6 +35,14 @@ public class SmokeTestResult implements Comparable<SmokeTestResult> {
         this.message            = message;
     }
 
+    @Override
+    public String toString() {
+        return String.format(
+                "id [%s], state [%s], elapsedNs [%d], message [%s]",
+                id, state, elapsedNanoSeconds, message
+        );
+    }
+
     public String getId() {
         return id;
     }

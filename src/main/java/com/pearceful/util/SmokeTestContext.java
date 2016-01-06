@@ -78,11 +78,17 @@ public class SmokeTestContext {
                         try {
                             return future.get();
                         } catch (Throwable t) {
+                            String msg = future.toString();
+
                             // Should not get here as SmokeTestCallable.call traps all Throwables, but ..........
-                            LOGGER.error("runSmokeTests", t);
+                            if(t instanceof CancellationException) {
+                                LOGGER.warn("runSmokeTests: Test [" + msg + "] cancelled due to Executor timeout");
+                            } else {
+                                LOGGER.error("runSmokeTests: Test [" + msg + "] Executor error", t);
+                            }
 
                             return new SmokeTestResult(
-                                    future.toString(),  // Can't get the id at this point :-(
+                                    msg,  // Can't get the id at this point :-(
                                     SmokeTestResult.STATE.ERROR,
                                     0L,
                                     t.toString());

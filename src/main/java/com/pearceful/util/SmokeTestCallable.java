@@ -27,15 +27,17 @@ public class SmokeTestCallable implements Callable {
         long startNs                    = System.nanoTime();
 
         try {
-            LOGGER.debug(String.format("call: Processing test [%s]", smokeTestStrategy));
+            LOGGER.debug(String.format("call: Processing test id [%s]", smokeTestStrategy.getId()));
 
             smokeTestStrategy.preExecute();
             smokeTestStrategy.execute();
             smokeTestStrategy.postExecute();
 
             smokeTestResult = smokeTestStrategy.validate();
+
+            LOGGER.debug(String.format("call: Test result [%s]", smokeTestResult));
         } catch (Throwable t) {
-            LOGGER.warn(String.format("call: Problem running test [%s]", smokeTestStrategy), t);
+            LOGGER.warn(String.format("call: Problem running test id [%s]", smokeTestStrategy.getId()), t);
 
             smokeTestResult =
                     new SmokeTestResult(
