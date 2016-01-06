@@ -5,7 +5,7 @@ package com.pearceful.util;
  *
  * A helper class to make it simpler to implement the SmokeTestStrategy interface.
  */
-public abstract class BaseSmokeTestStrategy< T extends BaseSmokeTestStrategy> implements SmokeTestStrategy, Comparable<T> {
+public abstract class BaseSmokeTestStrategy implements SmokeTestStrategy {
 
     protected String id;
     protected SmokeTestResult smokeTestResult;
@@ -21,8 +21,22 @@ public abstract class BaseSmokeTestStrategy< T extends BaseSmokeTestStrategy> im
     public void postExecute() {
     }
 
-    public int compareTo(T o) {
-        return getId().compareTo(o.getId());
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(this == obj) return true;
+
+        if(null == obj) return false;
+
+        if(! (this instanceof SmokeTestStrategy)) return false;
+
+        SmokeTestStrategy other = (SmokeTestStrategy)obj;
+
+        return id.equals(other.getId());
     }
 
     @Override

@@ -2,7 +2,9 @@ package com.pearceful.util;
 
 import junit.framework.TestCase;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static java.lang.Thread.sleep;
@@ -19,7 +21,7 @@ public class SmokeTestContextTest extends TestCase {
 
         SimpleBaseSmokeTestStrategy simpleBaseSmokeTestStrategy = new SimpleBaseSmokeTestStrategy(id, smokeTestResult);
 
-        List<SmokeTestStrategy> smokeTestStrategies = new ArrayList<>();
+        Set<SmokeTestStrategy> smokeTestStrategies = new HashSet<>();
         smokeTestStrategies.add(simpleBaseSmokeTestStrategy);
 
         List<SmokeTestResult> smokeTestResults = SmokeTestContext.runSmokeTests(smokeTestStrategies, 1, 2);
@@ -44,7 +46,7 @@ public class SmokeTestContextTest extends TestCase {
         SimpleBaseSmokeTestStrategy simpleBaseSmokeTestStrategy =
                 new SimpleBaseSmokeTestStrategy(id, smokeTestResult, true, timeout);
 
-        List<SmokeTestStrategy> smokeTestStrategies = new ArrayList<>();
+        Set<SmokeTestStrategy> smokeTestStrategies = new HashSet<>();
         smokeTestStrategies.add(simpleBaseSmokeTestStrategy);
 
         List<SmokeTestResult> results = SmokeTestContext.runSmokeTests(smokeTestStrategies, 1, timeout);
@@ -63,7 +65,7 @@ public class SmokeTestContextTest extends TestCase {
         SimpleBaseSmokeTestStrategy simpleBaseSmokeTestStrategy =
                 new SimpleBaseSmokeTestStrategy(id, smokeTestResult, false, timeout * 2);
 
-        List<SmokeTestStrategy> smokeTestStrategies = new ArrayList<>();
+        Set<SmokeTestStrategy> smokeTestStrategies = new HashSet<>();
         smokeTestStrategies.add(simpleBaseSmokeTestStrategy);
 
         List<SmokeTestResult> results = SmokeTestContext.runSmokeTests(smokeTestStrategies, 1, timeout);
@@ -79,14 +81,14 @@ public class SmokeTestContextTest extends TestCase {
         int strategyCount = threadPoolSize * 2;
 
         // Generate a list of test strategies
-        List<SmokeTestStrategy> smokeTestStrategies = new ArrayList<>();
+        Set<SmokeTestStrategy> smokeTestStrategies = new HashSet<>();
 
         IntStream.range(1, strategyCount + 1)
                 .forEach(i ->
                         smokeTestStrategies.add(new
                                 SimpleBaseSmokeTestStrategy(
-                                "" + i,
-                                new SmokeTestResult("" + i, SmokeTestResult.STATE.PASS, 0, msg + i)))
+                                "G" + i,
+                                new SmokeTestResult("G" + i, SmokeTestResult.STATE.PASS, 0, msg + i)))
                 );
 
 
@@ -113,24 +115,24 @@ public class SmokeTestContextTest extends TestCase {
         int badStrategyCount    = threadPoolSize;
 
         // Generate a list of test strategies
-        List<SmokeTestStrategy> smokeTestStrategies = new ArrayList<>();
+        Set<SmokeTestStrategy> smokeTestStrategies = new HashSet<>();
 
         IntStream.range(1, goodStrategyCount + 1)
                 .forEach(i ->
                         smokeTestStrategies.add(new
                                 SimpleBaseSmokeTestStrategy(
-                                "" + i,
-                                new SmokeTestResult("" + i, SmokeTestResult.STATE.PASS, 0, msg + i)))
+                                "G" + i,
+                                new SmokeTestResult("G" + i, SmokeTestResult.STATE.PASS, 0, msg + i)))
                 );
 
         IntStream.range(1, badStrategyCount + 1)
                 .forEach(i ->
                         smokeTestStrategies.add(new
                                 SimpleBaseSmokeTestStrategy(
-                                "" + i,
-                                new SmokeTestResult("" + i, SmokeTestResult.STATE.PASS, timeoutSeconds, msg + i),
+                                "B" + i,
+                                new SmokeTestResult("B" + i, SmokeTestResult.STATE.PASS, timeoutSeconds + 2, msg + i),
                                 false,
-                                timeoutSeconds + 1))
+                                timeoutSeconds + 2))
                 );
 
         List<SmokeTestResult> smokeTestResults =
@@ -186,7 +188,9 @@ public class SmokeTestContextTest extends TestCase {
             if(delayInSeconds > 0) {
                 try {
                     sleep(1000 * delayInSeconds);
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 

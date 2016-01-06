@@ -17,7 +17,7 @@ public class SmokeTestContext {
     /**
      * Run the smoke tests (multi-threaded)
      *
-     * @param smokeTestStrategies A list of smoke test strategies to be run
+     * @param smokeTestStrategies A set of smoke test strategies to be run
      * @param threadPoolSize The thread pool size to run the test in
      * @param timeoutInSeconds How long to wait for all the tests to complete
      *
@@ -26,7 +26,7 @@ public class SmokeTestContext {
      * @throws SmokeTestException
      */
     public static List<SmokeTestResult> runSmokeTests(
-            final List<SmokeTestStrategy> smokeTestStrategies,
+            final Set<SmokeTestStrategy> smokeTestStrategies,
             final int threadPoolSize,
             final long timeoutInSeconds) throws SmokeTestException {
 

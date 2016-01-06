@@ -35,9 +35,13 @@ public class SmokeTestCallable implements Callable {
 
             smokeTestResult = smokeTestStrategy.validate();
 
-            LOGGER.debug(String.format("call: Test result [%s]", smokeTestResult));
+            long elapsedUs = (System.nanoTime() - startNs) / 1000;
+
+            LOGGER.debug(String.format("call: Test result [%s] retrieved in %d uS", smokeTestResult, elapsedUs));
         } catch (Throwable t) {
-            LOGGER.warn(String.format("call: Problem running test id [%s]", smokeTestStrategy.getId()), t);
+            long elapsedUs = (System.nanoTime() - startNs) / 1000;
+
+            LOGGER.warn(String.format("call: Problem running test id [%s] after %d uS", smokeTestStrategy.getId(), elapsedUs), t);
 
             smokeTestResult =
                     new SmokeTestResult(
