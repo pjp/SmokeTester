@@ -15,6 +15,7 @@ public abstract class BaseSmokeTestStrategy implements SmokeTestStrategy {
         return called;
     }
 
+    @Override
     public void setCalled() {
         called = true;
     }
