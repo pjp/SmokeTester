@@ -100,11 +100,14 @@ public class SmokeTestContextTest extends TestCase {
         // Build a list of strategy smoke tests that (each) will run in less that the
         // timeout for the overall test to complete in
         IntStream.range(1, strategyCount + 1)
-                .forEach(i ->
-                        smokeTestStrategies.add(new
-                                MockSimpleBaseSmokeTestStrategy(
-                                "G" + i,
-                                new SmokeTestResult("G" + i, SmokeTestResult.STATE.PASS, 0, msg + i)))
+                .forEach(i -> {
+                            String id = "G" + i;
+
+                            smokeTestStrategies.add(new
+                                    MockSimpleBaseSmokeTestStrategy(
+                                    id,
+                                    new SmokeTestResult("G" + i, SmokeTestResult.STATE.PASS, 0, msg + i)));
+                        }
                 );
 
 
@@ -136,23 +139,29 @@ public class SmokeTestContextTest extends TestCase {
         // Build a list of strategy smoke tests that (each) will run in less that the
         // timeout for the overall test to complete in
         IntStream.range(1, goodStrategyCount + 1)
-                .forEach(i ->
-                        smokeTestStrategies.add(new
-                                MockSimpleBaseSmokeTestStrategy(
-                                "G" + i,
-                                new SmokeTestResult("G" + i, SmokeTestResult.STATE.PASS, 0, msg + i)))
+                .forEach(i -> {
+                            String id = "G" + i;
+
+                            smokeTestStrategies.add(new
+                                    MockSimpleBaseSmokeTestStrategy(
+                                    id,
+                                    new SmokeTestResult(id, SmokeTestResult.STATE.PASS, 0, msg + i)));
+                        }
                 );
 
         // Build a list of strategy smoke tests that (each) will run longer that the
         // timeout for the overall test to complete in
         IntStream.range(1, badStrategyCount + 1)
-                .forEach(i ->
-                        smokeTestStrategies.add(new
-                                MockSimpleBaseSmokeTestStrategy(
-                                "B" + i,
-                                new SmokeTestResult("B" + i, SmokeTestResult.STATE.PASS, timeoutSeconds + 2, msg + i),
-                                false,
-                                timeoutSeconds + 2))
+                .forEach(i -> {
+                            String id = "B" + i;
+
+                            smokeTestStrategies.add(new
+                                    MockSimpleBaseSmokeTestStrategy(
+                                    id,
+                                    new SmokeTestResult(id, SmokeTestResult.STATE.PASS, timeoutSeconds + 2, msg + i),
+                                    false,
+                                    timeoutSeconds + 2));
+                        }
                 );
 
         List<SmokeTestResult> smokeTestResults =

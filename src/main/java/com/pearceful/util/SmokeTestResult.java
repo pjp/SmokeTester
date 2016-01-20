@@ -12,11 +12,19 @@ public class SmokeTestResult implements Comparable<SmokeTestResult> {
     private String message;             // A result (or exception message)
 
     public enum STATE {
-        ERROR,  // A problem occured while trying to run the test
+        ERROR,  // A problem occurred while trying to run the test
         PASS,   // The test ran and (all) the test conditions passed
         FAIL    // The test ran, but the test condition(s) failed
     }
 
+    /**
+     *
+     * @param id The id of the SmokeTestStrategy that produced this result, if it doesn't match, then the
+     *           SmokeTestContext.runSmokeTests method will log an error and the result will will be discarded.
+     * @param state
+     * @param elapsedNanoSeconds
+     * @param message
+     */
     public SmokeTestResult(
             final String id,
             final STATE state,

@@ -17,7 +17,7 @@ public class SmokeTestContext {
     /**
      * Run the smoke tests (multi-threaded)
      *
-     * The called flag in the Strategy will be set if it's actually executed, which may not be the
+     * The called flag in each Strategy will be set if it's actually executed, which may not be the
      * case if the ThreadPool actually times out.
      *
      * @param smokeTestStrategies A set of smoke test strategies to be run
@@ -25,8 +25,7 @@ public class SmokeTestContext {
      * @param timeoutInSeconds How long to wait for all the tests to complete
      *
      * @return A list of results from each smoke test, if an error or timeout from the ThreadPool occurs, then a
-     * result will be synthesised, checking the called flag on the strategy passed in, will help determine what may have
-     * happened.
+     * result will be synthesised for the test.
      *
      * @throws SmokeTestException
      */
@@ -74,32 +73,57 @@ public class SmokeTestContext {
             ////////////////////////////////////////
             // Do the work (possibly multi-threaded)
             //
-            // What happens if one or more smokeTestCallables fails?, we want to record it's
-            // id and carry on with the rest
-            //
-            smokeTestExecutor.invokeAll(smokeTestCallables, timeoutInSeconds, TimeUnit.SECONDS)
-                    .stream()
-                    .map( future -> {
-                        try {
-                            return future.get();    // Will set the called flag on the Strategy
-                        } catch (Throwable t) {
-                            String msg = future.toString();
+            List<Future<SmokeTestResult>> futures =
+                    smokeTestExecutor.invokeAll(smokeTestCallables, timeoutInSeconds, TimeUnit.SECONDS);
 
-                            // Should not get here as SmokeTestCallable.call traps all Throwables, but ..........
-                            if(t instanceof CancellationException) {
-                                LOGGER.warn("runSmokeTests: Test [" + msg + "] cancelled due to Executor timeout", t);
-                            } else {
-                                LOGGER.error("runSmokeTests: Test [" + msg + "] Executor error", t);
-                            }
+            //////////////////////////////////////////////
+            // Determine how many Callables were passed in
+            int callableSize = smokeTestCallables.size();
 
-                            return new SmokeTestResult(
-                                    msg,  // Can't get the id at this point :-(
-                                    SmokeTestResult.STATE.ERROR,
-                                    0L,
-                                    t.toString());
-                        }
-                    })
-                    .forEach(smokeTestResults::add);
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Since it's guaranteed that the order of these futures are in the same order as the list of callables
+            // the id can be determined
+            for(int i = 0 ; i < callableSize ; i++) {
+                SmokeTestCallable callable      = (SmokeTestCallable)smokeTestCallables.get(i);
+                SmokeTestStrategy strategy      = callable.getSmokeTestStrategy();
+                String strategyId               = strategy.getId();
+                SmokeTestResult smokeTestResult;
+
+                try {
+                    Future<SmokeTestResult> future = futures.get(i);
+
+                    /////////////////////////////////
+                    // Get the result from the future
+                    smokeTestResult = future.get();
+
+                    ////////////////
+                    // Sanity checks
+                    if(! strategyId.equals(smokeTestResult.getId())) {
+                        String errMsg =
+                                "runSmokeTests: result's id ["
+                                + smokeTestResult.getId()
+                                + "] does not match expected id ["
+                                + strategyId
+                                + "]";
+
+                        throw new SmokeTestException(errMsg);
+                    }
+                } catch(Throwable t) {
+                    if (t instanceof CancellationException) {
+                        LOGGER.warn("runSmokeTests: Test [" + strategyId + "] cancelled due to Executor timeout", t);
+                    } else {
+                        LOGGER.error("runSmokeTests: Test [" + strategyId + "] Executor error", t);
+                    }
+
+                    smokeTestResult = new SmokeTestResult(
+                            strategyId,
+                            SmokeTestResult.STATE.ERROR,
+                            0L,
+                            t.toString());
+                }
+
+                smokeTestResults.add(smokeTestResult);
+            }
         } catch (InterruptedException e) {
             LOGGER.error("runSmokeTests: Problem executing tests", e);
             throw new SmokeTestException(e);
