@@ -87,7 +87,7 @@ public class SmokeTestContext {
 
                             // Should not get here as SmokeTestCallable.call traps all Throwables, but ..........
                             if(t instanceof CancellationException) {
-                                LOGGER.warn("runSmokeTests: Test [" + msg + "] cancelled due to Executor timeout");
+                                LOGGER.warn("runSmokeTests: Test [" + msg + "] cancelled due to Executor timeout", t);
                             } else {
                                 LOGGER.error("runSmokeTests: Test [" + msg + "] Executor error", t);
                             }
