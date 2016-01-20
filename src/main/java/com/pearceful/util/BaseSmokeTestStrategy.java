@@ -6,9 +6,18 @@ package com.pearceful.util;
  * A helper class to make it simpler to implement the SmokeTestStrategy interface.
  */
 public abstract class BaseSmokeTestStrategy implements SmokeTestStrategy {
-
+    protected boolean called = false;
     protected String id;
     protected SmokeTestResult smokeTestResult;
+
+    @Override
+    public boolean wasCalled() {
+        return called;
+    }
+
+    public void setCalled() {
+        called = true;
+    }
 
     @Override
     public String getId() { return id; }

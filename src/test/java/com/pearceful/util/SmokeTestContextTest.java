@@ -41,6 +41,7 @@ public class SmokeTestContextTest extends TestCase {
 
         assertEquals(id, result.getId());
         assertEquals(state, result.getState());
+        assertTrue(mockSimpleBaseSmokeTestStrategy.wasCalled());
 
     }
 
@@ -62,6 +63,7 @@ public class SmokeTestContextTest extends TestCase {
         SmokeTestResult retrievedSmokeTestResult = results.get(0);
         assertEquals(SmokeTestResult.STATE.ERROR, retrievedSmokeTestResult.getState());
         assertEquals(msg, retrievedSmokeTestResult.getMessage());
+        assertTrue(mockSimpleBaseSmokeTestStrategy.wasCalled());
     }
 
     public void testSimpleStrategyWithTimeout() throws SmokeTestException {
@@ -83,6 +85,7 @@ public class SmokeTestContextTest extends TestCase {
         SmokeTestResult retrievedSmokeTestResult = results.get(0);
         assertEquals(SmokeTestResult.STATE.ERROR, retrievedSmokeTestResult.getState());
         assertTrue(retrievedSmokeTestResult.getMessage().contains("CancellationException"));
+        assertTrue(mockSimpleBaseSmokeTestStrategy.wasCalled());
     }
 
     public void testMultipleStrategiesAllGood() throws InterruptedException, SmokeTestException {
@@ -172,6 +175,11 @@ public class SmokeTestContextTest extends TestCase {
                         .stream()
                         .filter(s -> s.getState().equals(SmokeTestResult.STATE.ERROR))
                         .count());
+
+        // They should have all been called
+        for(SmokeTestStrategy strategy : smokeTestStrategies) {
+            assertTrue(strategy.getId(), strategy.wasCalled());
+        }
     }
 
     /**

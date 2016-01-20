@@ -15,6 +15,10 @@ public class SmokeTestCallable implements Callable {
     private SmokeTestStrategy smokeTestStrategy;
 
     public  SmokeTestCallable(final SmokeTestStrategy smokeTestStrategy) {
+        if(null == smokeTestStrategy) {
+            throw new RuntimeException("Null SmokeTestStrategy specified");
+        }
+
         this.smokeTestStrategy = smokeTestStrategy;
     }
 
@@ -23,8 +27,10 @@ public class SmokeTestCallable implements Callable {
     }
 
     public SmokeTestResult call() throws Exception {
-        SmokeTestResult smokeTestResult ;
+        smokeTestStrategy.setCalled();
+
         long startNs                    = System.nanoTime();
+        SmokeTestResult smokeTestResult ;
 
         try {
             LOGGER.debug(String.format("call: Processing test id [%s]", smokeTestStrategy.getId()));
