@@ -25,7 +25,7 @@ public class SmokeTestContext {
      * @param timeoutInSeconds How long to wait for all the tests to complete
      *
      * @return A list of results from each smoke test, if an error or timeout from the ThreadPool occurs, then a
-     * result with be synthesised, checking the called flag on the strategy passed in will help determine what
+     * result will be synthesised, checking the called flag on the strategy passed in, will help determine what may have
      * happened.
      *
      * @throws SmokeTestException
@@ -81,7 +81,7 @@ public class SmokeTestContext {
                     .stream()
                     .map( future -> {
                         try {
-                            return future.get();
+                            return future.get();    // Will set the called flag on the Strategy
                         } catch (Throwable t) {
                             String msg = future.toString();
 
