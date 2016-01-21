@@ -12,9 +12,10 @@ public class SmokeTestResult implements Comparable<SmokeTestResult> {
     private String message;             // A result (or exception message)
 
     public enum STATE {
-        ERROR,  // A problem occurred while trying to run the test
-        PASS,   // The test ran and (all) the test conditions passed
-        FAIL    // The test ran, but the test condition(s) failed
+        EXEC_ERROR,     // An error occured trying to execute the test
+        USER_ERROR,     // A user defined problem occurred while running the test
+        USER_PASS,      // The test ran and (all) the test conditions passed
+        USER_FAIL       // The test ran, but the test condition(s) failed
     }
 
     /**

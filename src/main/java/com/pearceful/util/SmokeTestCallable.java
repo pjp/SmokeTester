@@ -26,8 +26,13 @@ public class SmokeTestCallable implements Callable {
         return smokeTestStrategy;
     }
 
-    public SmokeTestResult call() throws Exception {
-        smokeTestStrategy.setCalled();
+    /**
+     * Execute the strategy.
+     *
+     * @return A SmokeTestResult regardless of any Exceptions
+     */
+    @Override
+    public SmokeTestResult call() {
 
         long startNs                    = System.nanoTime();
         SmokeTestResult smokeTestResult ;
@@ -52,7 +57,7 @@ public class SmokeTestCallable implements Callable {
             smokeTestResult =
                     new SmokeTestResult(
                             smokeTestStrategy.getId(),
-                            SmokeTestResult.STATE.ERROR,
+                            SmokeTestResult.STATE.USER_ERROR,
                             System.nanoTime() - startNs,
                             t.getMessage());
         }

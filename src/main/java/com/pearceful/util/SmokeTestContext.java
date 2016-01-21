@@ -24,8 +24,8 @@ public class SmokeTestContext {
      * @param threadPoolSize The thread pool size to run the test in
      * @param timeoutInSeconds How long to wait for all the tests to complete
      *
-     * @return A list of results from each smoke test, if an error or timeout from the ThreadPool occurs, then a
-     * result will be synthesised for the test.
+     * @return A list of results from each smoke test, examine each STATE to determine the actual validity of the
+     * result. This list should be in the same order as the passed in strategies.
      *
      * @throws SmokeTestException
      */
@@ -117,7 +117,7 @@ public class SmokeTestContext {
 
                     smokeTestResult = new SmokeTestResult(
                             strategyId,
-                            SmokeTestResult.STATE.ERROR,
+                            SmokeTestResult.STATE.EXEC_ERROR,
                             0L,
                             t.toString());
                 }

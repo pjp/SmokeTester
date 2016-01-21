@@ -18,7 +18,7 @@ public class SmokeTestContextTest extends TestCase {
         String msg                  = "message1";
         int threadPoolSize          = 1;
         int timeoutInSeconds        = 2;
-        SmokeTestResult.STATE state = SmokeTestResult.STATE.PASS;
+        SmokeTestResult.STATE state = SmokeTestResult.STATE.USER_PASS;
         SmokeTestResult mockSmokeTestResult = new SmokeTestResult(id, state, 0, msg);
 
         // Build a strategy smoke tests that will run in less that the
@@ -41,15 +41,13 @@ public class SmokeTestContextTest extends TestCase {
 
         assertEquals(id, result.getId());
         assertEquals(state, result.getState());
-        assertTrue(mockSimpleBaseSmokeTestStrategy.wasCalled());
-
     }
 
     public void testSimpleStrategyWithForcedException() throws SmokeTestException {
         int timeout = 1;
         String id = "1";
         String msg  = "forcedException";
-        SmokeTestResult.STATE state = SmokeTestResult.STATE.ERROR;
+        SmokeTestResult.STATE state = SmokeTestResult.STATE.USER_ERROR;
         SmokeTestResult mockSmokeTestResult = new SmokeTestResult(id, state, 0, msg);
 
         // Build a strategy smoke test that will throw an exception
@@ -61,16 +59,15 @@ public class SmokeTestContextTest extends TestCase {
 
         List<SmokeTestResult> results = SmokeTestContext.runSmokeTests(smokeTestStrategies, 1, timeout);
         SmokeTestResult retrievedSmokeTestResult = results.get(0);
-        assertEquals(SmokeTestResult.STATE.ERROR, retrievedSmokeTestResult.getState());
+        assertEquals(SmokeTestResult.STATE.USER_ERROR, retrievedSmokeTestResult.getState());
         assertEquals(msg, retrievedSmokeTestResult.getMessage());
-        assertTrue(mockSimpleBaseSmokeTestStrategy.wasCalled());
     }
 
     public void testSimpleStrategyWithTimeout() throws SmokeTestException {
         int timeout = 1;
         String id = "1";
         String msg  = "forcedException";
-        SmokeTestResult.STATE state = SmokeTestResult.STATE.ERROR;
+        SmokeTestResult.STATE state = SmokeTestResult.STATE.USER_ERROR;
         SmokeTestResult mockSmokeTestResult = new SmokeTestResult(id, state, 0, msg);
 
         // Build a strategy smoke test that will run longer that the
@@ -83,9 +80,8 @@ public class SmokeTestContextTest extends TestCase {
 
         List<SmokeTestResult> results = SmokeTestContext.runSmokeTests(smokeTestStrategies, 1, timeout);
         SmokeTestResult retrievedSmokeTestResult = results.get(0);
-        assertEquals(SmokeTestResult.STATE.ERROR, retrievedSmokeTestResult.getState());
+        assertEquals(SmokeTestResult.STATE.EXEC_ERROR, retrievedSmokeTestResult.getState());
         assertTrue(retrievedSmokeTestResult.getMessage().contains("CancellationException"));
-        assertTrue(mockSimpleBaseSmokeTestStrategy.wasCalled());
     }
 
     public void testMultipleStrategiesAllGood() throws InterruptedException, SmokeTestException {
@@ -106,7 +102,7 @@ public class SmokeTestContextTest extends TestCase {
                             smokeTestStrategies.add(new
                                     MockSimpleBaseSmokeTestStrategy(
                                     id,
-                                    new SmokeTestResult("G" + i, SmokeTestResult.STATE.PASS, 0, msg + i)));
+                                    new SmokeTestResult("G" + i, SmokeTestResult.STATE.USER_PASS, 0, msg + i)));
                         }
                 );
 
@@ -117,12 +113,12 @@ public class SmokeTestContextTest extends TestCase {
         assertNotNull(smokeTestResults);
         assertEquals(strategyCount, smokeTestResults.size());
 
-        // Make sure there are only PASS's
+        // Make sure there are only USER_PASS's
         assertEquals(
                 strategyCount,
                 smokeTestResults
                     .stream()
-                    .filter(s -> s.getState().equals(SmokeTestResult.STATE.PASS))
+                    .filter(s -> s.getState().equals(SmokeTestResult.STATE.USER_PASS))
                     .count());
     }
 
@@ -145,7 +141,7 @@ public class SmokeTestContextTest extends TestCase {
                             smokeTestStrategies.add(new
                                     MockSimpleBaseSmokeTestStrategy(
                                     id,
-                                    new SmokeTestResult(id, SmokeTestResult.STATE.PASS, 0, msg + i)));
+                                    new SmokeTestResult(id, SmokeTestResult.STATE.USER_PASS, 0, msg + i)));
                         }
                 );
 
@@ -158,7 +154,7 @@ public class SmokeTestContextTest extends TestCase {
                             smokeTestStrategies.add(new
                                     MockSimpleBaseSmokeTestStrategy(
                                     id,
-                                    new SmokeTestResult(id, SmokeTestResult.STATE.PASS, timeoutSeconds + 2, msg + i),
+                                    new SmokeTestResult(id, SmokeTestResult.STATE.USER_PASS, timeoutSeconds + 2, msg + i),
                                     false,
                                     timeoutSeconds + 2));
                         }
@@ -169,26 +165,21 @@ public class SmokeTestContextTest extends TestCase {
 
         assertNotNull(smokeTestResults);
 
-        // Make sure there are some PASS's
+        // Make sure there are some USER_PASS's
         assertEquals(
                 goodStrategyCount,
                 smokeTestResults
                         .stream()
-                        .filter(s -> s.getState().equals(SmokeTestResult.STATE.PASS))
+                        .filter(s -> s.getState().equals(SmokeTestResult.STATE.USER_PASS))
                         .count());
 
-        // Make sure there are some ERROR's
+        // Make sure there are some EXEC_ERROR's
         assertEquals(
                 badStrategyCount,
                 smokeTestResults
                         .stream()
-                        .filter(s -> s.getState().equals(SmokeTestResult.STATE.ERROR))
+                        .filter(s -> s.getState().equals(SmokeTestResult.STATE.EXEC_ERROR))
                         .count());
-
-        // They should have all been called
-        for(SmokeTestStrategy strategy : smokeTestStrategies) {
-            assertTrue(strategy.getId(), strategy.wasCalled());
-        }
     }
 
     /**
