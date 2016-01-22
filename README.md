@@ -13,5 +13,6 @@ executed (possibly in parallel) and then a list of SmokeTesResult's (one per Str
 This makes this framework very generic, any testing logic (optionally to be run in parallel), will inplement the 
 SmokeTestStrategy and returns a SmokeTestResult.
 
+See SmokeTestContext.runSmokeTests static method and the SmokeTestContextTest class
 
 
