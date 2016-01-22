@@ -48,6 +48,8 @@ public class SmokeTestContext {
             throw new IllegalArgumentException("runSmokeTests: timeoutInSeconds must be > 0");
         }
 
+        long startNs = System.nanoTime();
+
         LOGGER.info(String.format("runSmokeTests: Processing %d test(s)", smokeTestStrategies.size()));
 
         ////////////////////////////
@@ -130,6 +132,10 @@ public class SmokeTestContext {
         } finally {
             smokeTestExecutor.shutdown();
         }
+
+        long endNs = System.nanoTime();
+
+        LOGGER.info("runSmokeTests: Completed in " + ((endNs - startNs) / 1000000) + "mS");
 
         return smokeTestResults;
     }

@@ -85,8 +85,8 @@ public class SmokeTestContextTest extends TestCase {
     }
 
     public void testMultipleStrategiesAllGood() throws InterruptedException, SmokeTestException {
-        String msg  = "message1";
-        int threadPoolSize  =   3;
+        String msg  = "message";
+        int threadPoolSize  =   50;
         int timeoutSeconds  =   10;
         int strategyCount = threadPoolSize * 2;
 
@@ -98,11 +98,12 @@ public class SmokeTestContextTest extends TestCase {
         IntStream.range(1, strategyCount + 1)
                 .forEach(i -> {
                             String id = "G" + i;
+                            String responseMsg = msg + i;
 
                             smokeTestStrategies.add(new
                                     MockSimpleBaseSmokeTestStrategy(
                                     id,
-                                    new SmokeTestResult("G" + i, SmokeTestResult.STATE.USER_PASS, 0, msg + i)));
+                                    new SmokeTestResult("G" + i, SmokeTestResult.STATE.USER_PASS, 0, responseMsg)));
                         }
                 );
 
@@ -113,6 +114,7 @@ public class SmokeTestContextTest extends TestCase {
         assertNotNull(smokeTestResults);
         assertEquals(strategyCount, smokeTestResults.size());
 
+        ///////////////////////////////////////
         // Make sure there are only USER_PASS's
         assertEquals(
                 strategyCount,
@@ -120,6 +122,7 @@ public class SmokeTestContextTest extends TestCase {
                     .stream()
                     .filter(s -> s.getState().equals(SmokeTestResult.STATE.USER_PASS))
                     .count());
+
     }
 
     public void testMultipleStrategiesSomeGoodSomeTimeout() throws InterruptedException, SmokeTestException {
