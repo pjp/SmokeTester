@@ -17,14 +17,11 @@ public class SmokeTestContext {
     /**
      * Run the smoke tests (multi-threaded)
      *
-     * The called flag in each Strategy will be set if it's actually executed, which may not be the
-     * case if the ThreadPool actually times out.
-     *
      * @param smokeTestStrategies A set of smoke test strategies to be run
      * @param threadPoolSize The thread pool size to run the test in
      * @param timeoutInSeconds How long to wait for all the tests to complete
      *
-     * @return A list of results from each smoke test, examine each STATE to determine the actual validity of the
+     * @return A list of results from each of the smoke tests, examine each STATE to determine the actual validity of the
      * result. This list should be in the same order as the passed in strategies.
      *
      * @throws SmokeTestException

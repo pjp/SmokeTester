@@ -41,6 +41,7 @@ public class SmokeTestContextTest extends TestCase {
 
         assertEquals(id, result.getId());
         assertEquals(state, result.getState());
+        assertEquals(0, result.getElapsedNanoSeconds());
     }
 
     public void testSimpleStrategyWithForcedException() throws SmokeTestException {

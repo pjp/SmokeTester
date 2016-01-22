@@ -22,9 +22,9 @@ public class SmokeTestResult implements Comparable<SmokeTestResult> {
      *
      * @param id The id of the SmokeTestStrategy that produced this result, if it doesn't match, then the
      *           SmokeTestContext.runSmokeTests method will log an error and the result will will be discarded.
-     * @param state
-     * @param elapsedNanoSeconds
-     * @param message
+     * @param state The state of the test
+     * @param elapsedNanoSeconds How long the test took to run
+     * @param message Any useful message can be set
      */
     public SmokeTestResult(
             final String id,
