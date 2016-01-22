@@ -1,7 +1,7 @@
 # SmokeTester
-Java8 based generic smoke test framework
+## Java8 based generic smoke test framework
 
-Overview:
+### Overview:
 
 This was developed from an older integration testing framework that was hardcoded to take an (XML) list of URL's 
 (and request attributes/parameters) make HTTP(s) calls, and then validate the response against a list of criteria to 
@@ -13,6 +13,6 @@ executed (possibly in parallel) and then a list of SmokeTesResult's (one per Str
 This makes this framework very generic, any testing logic (optionally to be run in parallel), will inplement the 
 SmokeTestStrategy and returns a SmokeTestResult.
 
-See SmokeTestContext.runSmokeTests static method and the SmokeTestContextTest class
+See *SmokeTestContext.runSmokeTests* static method and the *SmokeTestContextTest* class
 
 
