@@ -15,8 +15,8 @@ import java.util.stream.Stream;
 /**
  * Created by ppearce on 2016-02-04.
  *
- * Read a file that contains shell scrips (one per line) to execute
- * in parallel.
+ * Read a file that contains commands or shell scripts (one per line) to execute
+ * in parallel. Example file is scripts.txt
  *
  * As per the shell, lines starting with # as ignored
  *
