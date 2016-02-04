@@ -63,7 +63,7 @@ public class ShellScriptListProcessor {
                     failedCount++;
                 }
 
-                System.out.println(result);
+                System.out.println(result.getMessage());
             }
 
             //////////

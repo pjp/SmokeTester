@@ -1,0 +1,2 @@
+# A couple of commands to run
+hostname
