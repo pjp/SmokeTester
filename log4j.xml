@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration>
+
+    <!-- ======================================================================== -->
+    <!-- Appender for standard output                                             -->
+    <!-- ======================================================================== -->
+    <appender name="SmokeTestConsoleAppender" class="org.apache.log4j.ConsoleAppender">
+        <param name="Threshold" value="INFO"/>
+
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%m%n" />
+        </layout>
+    </appender>
+
+    <!-- ======================================================================== -->
+    <!-- General appender for all Smoke Test messages                         -->
+    <!-- ======================================================================== -->
+    <appender name="SmokeTestFileAppender" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="smoketest.log" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="Threshold" value="DEBUG"/>
+
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%5p %d (%C) %m%n" />
+        </layout>
+
+    </appender>
+
+    <logger name="com.pearceful.util.SmokeTestContext" additivity="false">
+        <level value="DEBUG"/>
+        <appender-ref ref="SmokeTestFileAppender" />
+    </logger>
+
+    <!-- ======================================================================== -->
+    <!-- Root category                                                            -->
+    <!-- ======================================================================== -->
+    <root>
+        <appender-ref ref="SmokeTestConsoleAppender" />
+        <appender-ref ref="SmokeTestFileAppender" />
+    </root>
+</log4j:configuration>
