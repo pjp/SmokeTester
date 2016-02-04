@@ -71,8 +71,8 @@ public class ShellScriptListProcessor {
             // Summary
             System.out.printf("SUMMARY: There were %d pass(es) and %d failure(s)", passedCount, failedCount);
 
-            /////////////////////////////////////////////
-            // Indicate there was a failure to the caller
+            ////////////////////////////////////////////////
+            // Indicate if there was a failure to the caller
             if(failedCount > 0) {
                 exitStatus = 4;
             }
