@@ -1,2 +1,7 @@
-# A couple of commands to run
+##############################################################
+# A couple of commands to run, should work on Unix and Windows
 hostname
+echo hello world
+#################################################
+# This should cause a failure as it doesn't exist
+xyz

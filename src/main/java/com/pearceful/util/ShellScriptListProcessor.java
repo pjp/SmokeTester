@@ -36,10 +36,11 @@ public class ShellScriptListProcessor {
 
         Set<SmokeTestStrategy> shellScripts = new CopyOnWriteArraySet<>();
 
-        ////////////////////////////////
-        // Process each non comment line
+        /////////////////////////////////////////
+        // Process each non comment or blank line
         try(Stream<String> lines =
                     Files.lines(path)
+                            .filter(s -> s.trim().length() > 0)
                             .filter(s -> !s.startsWith("#"))) {
 
             lines.map(line -> { return new ShellScriptProcessor(line); })
@@ -68,7 +69,7 @@ public class ShellScriptListProcessor {
 
             //////////
             // Summary
-            System.out.printf("Summary: There were %d passes and %d failures", passedCount, failedCount);
+            System.out.printf("SUMMARY: There were %d pass(es) and %d failure(s)", passedCount, failedCount);
 
             /////////////////////////////////////////////
             // Indicate there was a failure to the caller

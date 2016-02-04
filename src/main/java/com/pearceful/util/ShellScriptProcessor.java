@@ -2,7 +2,10 @@ package com.pearceful.util;
 
 import org.apache.log4j.Logger;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 
 /**
  * Created by ppearce on 2016-02-04.
@@ -29,6 +32,9 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         // Process the command line
         try {
             Process proc = rt.exec(cmdLine);
+
+            proc.waitFor();
+
             elapsedNs = System.nanoTime() - startNs;
 
             msg = gatherOutputs(proc, elapsedNs);
@@ -39,7 +45,13 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         } catch (IOException e) {
             elapsedNs = System.nanoTime() - startNs;
 
-            msg = cmdDetails(id, 99, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
+            msg = cmdDetails(99, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
+
+            state = SmokeTestResult.STATE.EXEC_ERROR;
+        } catch (InterruptedException e) {
+            elapsedNs = System.nanoTime() - startNs;
+
+            msg = cmdDetails(100, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
 
             state = SmokeTestResult.STATE.EXEC_ERROR;
         }
@@ -53,16 +65,19 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     }
 
     protected String gatherOutputs(final Process proc, final long elapsedNs) {
+        BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+        BufferedReader stderr = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+
         return String.format(
                 "%s, stdout [%s], stderr [%s]",
-                cmdDetails(id, proc.exitValue(), cmdLine, elapsedNs),
-                proc.getOutputStream().toString(),
-                proc.getErrorStream().toString());
+                cmdDetails(proc.exitValue(), cmdLine, elapsedNs),
+                stdout.lines().collect(Collectors.joining("\n")),
+                stderr.lines().collect(Collectors.joining("\n")));
     }
 
-    protected String cmdDetails(final String id, final int exitCode, final String cmdLine, final long elapsedNs) {
+    protected String cmdDetails(final int exitCode, final String cmdLine, final long elapsedNs) {
         return String.format(
-                "id [%s], cmd [%s], elapsedNs [%d]",
+                "%s:, cmd [%s], elapsedNs [%d]",
                 (exitCode == 0 ? "PASS" : "FAIL"),
                 cmdLine,
                 elapsedNs);
