@@ -5,6 +5,9 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -13,12 +16,20 @@ import java.util.stream.Collectors;
 public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     private SmokeTestResult.STATE state = SmokeTestResult.STATE.USER_FAIL;
     private String cmdLine              = "";
+    private String envName;
+    private String envValue;
     private long elapsedNs              = 0 ;
     private String msg                  = "";
 
-    public ShellScriptProcessor(final int lineNumber, final String cmdLine) {
+    public ShellScriptProcessor(
+            final int lineNumber,
+            final String cmdLine,
+            final String envName,
+            final String envValue) {
         this.cmdLine    = cmdLine.trim();
         id              = ""+ lineNumber;
+        this.envName    = envName;
+        this.envValue   = envValue;
     }
 
     @Override
@@ -30,7 +41,30 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         ///////////////////////////
         // Process the command line
         try {
-            Process proc = rt.exec(cmdLine);
+            // Need to get all the existing env variables and add two more
+            Map<String, String> currentEnv = System.getenv();
+
+            List<String> newEnvList = new ArrayList<>();
+
+            if (null != envName) {
+                newEnvList.add(ShellScriptListProcessor.TAG_ENV_NAME + "=" + envName);
+            }
+
+            if (null != envValue) {
+                newEnvList.add(ShellScriptListProcessor.TAG_ENV_VALUE + "=" + envValue);
+            }
+
+            /////////////////////////////
+            // Add the existing variables
+            for(Map.Entry e : currentEnv.entrySet()) {
+                newEnvList.add(e.getKey() + "=" + e.getValue());
+            }
+
+            ///////////////////////////////
+            // Convert the List to an array
+            String[] newEnv = newEnvList.toArray(new String[newEnvList.size()]);
+
+            Process proc = rt.exec(cmdLine, newEnv);
 
             proc.waitFor();
 

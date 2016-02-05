@@ -1,8 +1,10 @@
 ##############################################################
 # A couple of commands to run, should work on Unix and Windows
 #
+# Note that for environmental variable expansion, a shell has to be specified.
+#
 # This command should run in ALL environments
-#:+:   echo hello world
+#:+:   cmd /c echo hello world %st.env% = %st.value%
 #
 #####################################
 # This command should only run in DEV

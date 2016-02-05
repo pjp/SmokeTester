@@ -17,6 +17,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
  *
  */
 public class ShellScriptListProcessor {
+    public static final String COMMENT_LEADER   = "#";
+    public static final String TAG_SENTINAL     = ":";
+    public static final String TAG_ENV_NAME     = "st.env";
+    public static final String TAG_ENV_VALUE    = "st.value";
+
     public static void main(String[] args) {
         int exitStatus      = 0;
         int threadPoolSize  = 10;
@@ -29,9 +34,9 @@ public class ShellScriptListProcessor {
             System.exit(1);
         }
 
-        Path path   = Paths.get(args[0]);
-        stEnv         = System.getProperty(TAG_ENV_NAME);
-        stVal         = System.getProperty(TAG_ENV_VALUE);
+        Path path       = Paths.get(args[0]);
+        stEnv           = System.getProperty(TAG_ENV_NAME);
+        stVal           = System.getProperty(TAG_ENV_VALUE);
 
         Set<SmokeTestStrategy> shellScripts = new CopyOnWriteArraySet<>();
 
@@ -47,7 +52,7 @@ public class ShellScriptListProcessor {
 
                 if(lineToBeSelected(lineNumber, line, stEnv)) {
                     String cmdLine = stripLeadingToken(line);
-                    shellScripts.add(new ShellScriptProcessor(lineNumber, cmdLine));
+                    shellScripts.add(new ShellScriptProcessor(lineNumber, cmdLine, stEnv, stVal));
                 }
             }
 
@@ -121,11 +126,6 @@ public class ShellScriptListProcessor {
 
         return restOfLine;
     }
-
-    public static final String COMMENT_LEADER   = "#";
-    public static final String TAG_SENTINAL     = ":";
-    public static final String TAG_ENV_NAME     = "st.env";
-    public static final String TAG_ENV_VALUE     = "st.value";
 
     /**
      * Determine if the line can be selected for execution
