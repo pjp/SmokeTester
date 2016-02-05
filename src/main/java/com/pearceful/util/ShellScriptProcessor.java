@@ -17,7 +17,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     private String msg                  = "";
 
     public ShellScriptProcessor(final int lineNumber, final String cmdLine) {
-        this.cmdLine    = cmdLine;
+        this.cmdLine    = cmdLine.trim();
         id              = ""+ lineNumber;
     }
 

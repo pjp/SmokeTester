@@ -1,7 +1,14 @@
 ##############################################################
 # A couple of commands to run, should work on Unix and Windows
-hostname
-echo hello world
-#################################################
+#
+# This command should run in ALL environments
+#:+:   echo hello world
+#
+#####################################
+# This command should only run in DEV
+#:DEV: hostname
+#
+#########################################################
+# This command should run in all environments EXCEPT PROD
 # This should cause a failure as it doesn't exist
-xyz
+#:-PROD: xyz

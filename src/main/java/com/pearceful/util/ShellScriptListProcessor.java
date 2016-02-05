@@ -21,7 +21,8 @@ public class ShellScriptListProcessor {
         int exitStatus      = 0;
         int threadPoolSize  = 10;
         int timeoutSeconds  = 600;
-        String env          = "";
+        String stEnv          = "";
+        String stVal          = "";
 
         if(args.length < 1) {
             System.err.println("Need a file name to read as input");
@@ -29,7 +30,8 @@ public class ShellScriptListProcessor {
         }
 
         Path path   = Paths.get(args[0]);
-        env         = System.getenv(TAG_ENV_NAME);
+        stEnv         = System.getProperty(TAG_ENV_NAME);
+        stVal         = System.getProperty(TAG_ENV_VALUE);
 
         Set<SmokeTestStrategy> shellScripts = new CopyOnWriteArraySet<>();
 
@@ -43,7 +45,7 @@ public class ShellScriptListProcessor {
             for(String line : lines) {
                 lineNumber++;
 
-                if(lineToBeSelected(lineNumber, line, env)) {
+                if(lineToBeSelected(lineNumber, line, stEnv)) {
                     String cmdLine = stripLeadingToken(line);
                     shellScripts.add(new ShellScriptProcessor(lineNumber, cmdLine));
                 }
@@ -122,7 +124,8 @@ public class ShellScriptListProcessor {
 
     public static final String COMMENT_LEADER   = "#";
     public static final String TAG_SENTINAL     = ":";
-    public static final String TAG_ENV_NAME     = "ST_ENV";
+    public static final String TAG_ENV_NAME     = "st.env";
+    public static final String TAG_ENV_VALUE     = "st.value";
 
     /**
      * Determine if the line can be selected for execution
@@ -145,6 +148,7 @@ public class ShellScriptListProcessor {
             if(line.contains(TAG_SENTINAL + "-" + tag + TAG_SENTINAL)) return false;
 
             if(line.contains(TAG_SENTINAL + "+" + TAG_SENTINAL)) return true;
+            if(line.contains(TAG_SENTINAL + tag + TAG_SENTINAL)) return true;
             if(line.contains(TAG_SENTINAL + "+" + tag + TAG_SENTINAL)) return true;
         }
 
