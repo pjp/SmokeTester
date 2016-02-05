@@ -1,16 +1,11 @@
 package com.pearceful.util;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.stream.Stream;
 
 /**
  * Created by ppearce on 2016-02-04.
@@ -26,13 +21,15 @@ public class ShellScriptListProcessor {
         int exitStatus      = 0;
         int threadPoolSize  = 10;
         int timeoutSeconds  = 600;
+        String env          = "";
 
         if(args.length < 1) {
             System.err.println("Need a file name to read as input");
             System.exit(1);
         }
 
-        Path path = Paths.get(args[0]);
+        Path path   = Paths.get(args[0]);
+        env         = System.getenv(TAG_ENV_NAME);
 
         Set<SmokeTestStrategy> shellScripts = new CopyOnWriteArraySet<>();
 
@@ -46,9 +43,9 @@ public class ShellScriptListProcessor {
             for(String line : lines) {
                 lineNumber++;
 
-                // Strip out comment lines
-                if(! line.trim().startsWith("#")) {
-                    shellScripts.add(new ShellScriptProcessor(lineNumber, line));
+                if(lineToBeSelected(lineNumber, line, env)) {
+                    String cmdLine = stripLeadingToken(line);
+                    shellScripts.add(new ShellScriptProcessor(lineNumber, cmdLine));
                 }
             }
 
@@ -91,5 +88,66 @@ public class ShellScriptListProcessor {
         }
 
         System.exit(exitStatus);
+    }
+
+    /**
+     *
+     * @param line
+     * @return
+     */
+    public static String stripLeadingToken(final String line) {
+        String restOfLine   = "";
+
+        if(null == line) return "";
+
+        int lastOffset      = line.length() - 1;
+
+
+        int index = line.indexOf(" ");
+
+        if(-1 == index) {
+            index = line.indexOf("\t");
+        }
+
+        if(index >= 0) {
+            index++;
+
+            if (index <= lastOffset) {
+                restOfLine = line.substring(index);
+            }
+        }
+
+        return restOfLine;
+    }
+
+    public static final String COMMENT_LEADER   = "#";
+    public static final String TAG_SENTINAL     = ":";
+    public static final String TAG_ENV_NAME     = "ST_ENV";
+
+    /**
+     * Determine if the line can be selected for execution
+     *
+     * @param lineNumber
+     * @param line The line from the input file
+     * @param tag
+     *
+     * @return true if the line can be executed; else false
+     */
+    public static boolean lineToBeSelected(final int lineNumber, final String line, final String tag) {
+        if(null == line)        return false;
+
+        if(null == tag)         return false;
+
+        if(line.length() < 2)   return false;
+
+        if(line.startsWith(COMMENT_LEADER + TAG_SENTINAL)) {
+            if(line.contains(TAG_SENTINAL + "-" + TAG_SENTINAL)) return false;
+            if(line.contains(TAG_SENTINAL + "-" + tag + TAG_SENTINAL)) return false;
+
+            if(line.contains(TAG_SENTINAL + "+" + TAG_SENTINAL)) return true;
+            if(line.contains(TAG_SENTINAL + "+" + tag + TAG_SENTINAL)) return true;
+        }
+
+        return false;
     }
 }
