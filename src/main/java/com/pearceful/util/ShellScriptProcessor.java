@@ -16,10 +16,9 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     private long elapsedNs              = 0 ;
     private String msg                  = "";
 
-    public ShellScriptProcessor(final String cmdLine) {
-        this.cmdLine = cmdLine;
-
-        id  =   "" + cmdLine.hashCode();
+    public ShellScriptProcessor(final int lineNumber, final String cmdLine) {
+        this.cmdLine    = cmdLine;
+        id              = ""+ lineNumber;
     }
 
     @Override
@@ -45,13 +44,13 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         } catch (IOException e) {
             elapsedNs = System.nanoTime() - startNs;
 
-            msg = cmdDetails(99, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
+            msg = cmdDetails(0, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
 
             state = SmokeTestResult.STATE.EXEC_ERROR;
         } catch (InterruptedException e) {
             elapsedNs = System.nanoTime() - startNs;
 
-            msg = cmdDetails(100, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
+            msg = cmdDetails(0, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
 
             state = SmokeTestResult.STATE.EXEC_ERROR;
         }
@@ -70,15 +69,16 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
 
         return String.format(
                 "%s, stdout [%s], stderr [%s]",
-                cmdDetails(proc.exitValue(), cmdLine, elapsedNs),
+                cmdDetails(proc.exitValue(), id, cmdLine, elapsedNs),
                 stdout.lines().collect(Collectors.joining("\n")),
                 stderr.lines().collect(Collectors.joining("\n")));
     }
 
-    protected String cmdDetails(final int exitCode, final String cmdLine, final long elapsedNs) {
+    protected String cmdDetails(final int exitCode, final String id, final String cmdLine, final long elapsedNs) {
         return String.format(
-                "%s:, cmd [%s], elapsedNs [%d]",
+                "%s:, line [%s], cmd [%s], elapsedNs [%d]",
                 (exitCode == 0 ? "PASS" : "FAIL"),
+                id,
                 cmdLine,
                 elapsedNs);
     }

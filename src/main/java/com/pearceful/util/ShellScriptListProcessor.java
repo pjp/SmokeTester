@@ -38,13 +38,19 @@ public class ShellScriptListProcessor {
 
         /////////////////////////////////////////
         // Process each non comment or blank line
-        try(Stream<String> lines =
-                    Files.lines(path)
-                            .filter(s -> s.trim().length() > 0)
-                            .filter(s -> !s.startsWith("#"))) {
 
-            lines.map(line -> { return new ShellScriptProcessor(line); })
-                    .forEach(shellScripts::add);
+        try{
+            List<String> lines  = Files.readAllLines(path);
+            int lineNumber      = 0;
+
+            for(String line : lines) {
+                lineNumber++;
+
+                // Strip out comment lines
+                if(! line.trim().startsWith("#")) {
+                    shellScripts.add(new ShellScriptProcessor(lineNumber, line));
+                }
+            }
 
             //////////////////////////////
             // Run the scripts in parallel
