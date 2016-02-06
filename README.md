@@ -15,4 +15,7 @@ SmokeTestStrategy interface (or extends the *BaseSmokeTestStrategy* class) and r
 
 See *SmokeTestContext.runSmokeTests* static method and the *SmokeTestContextTest* class
 
+### Sample Implementation
 
+For a complete running sample implementation, see *ShellScriptListProcessor* class and the run.sh/run/cmd scripts
+in the standalone directory.
