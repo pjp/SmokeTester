@@ -243,4 +243,132 @@ public class SelectorTest extends TestCase {
         assertEquals(value, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, env.toLowerCase()));
         assertEquals(null, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, "SIT"));
     }
+
+    public void testEmptyOrNullFilter() {
+        String filterText   =   null;
+
+        try {
+            ShellScriptListProcessor.LineFilter clf =
+                    new ShellScriptListProcessor.LineFilter(filterText);
+
+            fail("Should have thrown an exception");
+        } catch(Exception e) {}
+
+        ///////////////////////////////////////////////
+        filterText  =   "";
+
+        try {
+            ShellScriptListProcessor.LineFilter clf =
+                    new ShellScriptListProcessor.LineFilter(filterText);
+
+            fail("Should have thrown an exception");
+        } catch(Exception e) {}
+    }
+
+    public void testValidPlainFilter() {
+        String rawFilterText    = " ";
+        String cmdLine          =   "";
+        ShellScriptListProcessor.LineFilter clf =
+                new ShellScriptListProcessor.LineFilter(rawFilterText);
+
+        assertFalse(clf.isMatch(cmdLine));
+
+        ////////////////////////////////////////////
+        cmdLine = "One two";
+        assertTrue(clf.isMatch(cmdLine));
+
+        rawFilterText    =
+                String.format("%s ", ShellScriptListProcessor.LineFilter.PLAIN_FILTER_PREFIX);
+        clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
+        assertTrue(clf.isMatch(cmdLine));
+
+        ////////////////////////////////////////////
+        cmdLine = "One=two";
+        rawFilterText    =
+                String.format("%s=", ShellScriptListProcessor.LineFilter.PLAIN_FILTER_PREFIX);
+        clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
+        assertTrue(clf.isMatch(cmdLine));
+
+    }
+
+    public void testValidPlainFilterInverted() {
+        String rawFilterText    = " ";
+        String cmdLine          = " ";
+
+        rawFilterText    =
+                String.format("%s ", ShellScriptListProcessor.LineFilter.PLAIN_FILTER_PREFIX_INVERTED);
+        ShellScriptListProcessor.LineFilter clf =
+                new ShellScriptListProcessor.LineFilter(rawFilterText);
+        assertFalse(clf.isMatch(cmdLine));
+
+        ////////////////////////////////////////////
+        cmdLine = "One=two";
+        rawFilterText    =
+                String.format("%s=", ShellScriptListProcessor.LineFilter.PLAIN_FILTER_PREFIX_INVERTED);
+        clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
+        assertFalse(clf.isMatch(cmdLine));
+
+    }
+
+    public void testValidRegexFilter() {
+        String rawFilterText    =
+                String.format("%s.*", ShellScriptListProcessor.LineFilter.REGEX_FILTER_PREFIX);
+        String cmdLine  =   " ";
+
+        ShellScriptListProcessor.LineFilter clf =
+                new ShellScriptListProcessor.LineFilter(rawFilterText);
+
+        assertTrue(clf.isMatch(cmdLine));
+
+        /////////////////////////////////////
+        rawFilterText   =
+                String.format(
+                        "%s[0-9]+",
+                        ShellScriptListProcessor.LineFilter.REGEX_FILTER_PREFIX);
+
+        clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
+
+        cmdLine =   "play 123";
+        assertTrue(clf.isMatch(cmdLine));
+
+        cmdLine =   "play one two three";
+        assertFalse(clf.isMatch(cmdLine));
+    }
+
+    public void testValidRegexFilterInverted() {
+        String rawFilterText    =
+                String.format("%s.*", ShellScriptListProcessor.LineFilter.REGEX_FILTER_PREFIX_INVERTED);
+        String cmdLine  =   "";
+
+        ShellScriptListProcessor.LineFilter clf =
+                new ShellScriptListProcessor.LineFilter(rawFilterText);
+
+        assertFalse(clf.isMatch(cmdLine));
+
+        /////////////////////////////////////
+        rawFilterText   =
+                String.format(
+                        "%s[0-9]+",
+                        ShellScriptListProcessor.LineFilter.REGEX_FILTER_PREFIX_INVERTED);
+
+        clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
+
+        cmdLine =   "play 123";
+        assertFalse(clf.isMatch(cmdLine));
+
+        cmdLine =   "play one two three";
+        assertTrue(clf.isMatch(cmdLine));
+    }
+
+    public void testInvalidRegexFilter() {
+        String rawFilterText    =
+                String.format("%s*", ShellScriptListProcessor.LineFilter.REGEX_FILTER_PREFIX);
+
+        try {
+            ShellScriptListProcessor.LineFilter clf =
+                    new ShellScriptListProcessor.LineFilter(rawFilterText);
+
+            fail("Should have thrown an exception");
+        } catch(Exception e) {}
+    }
 }

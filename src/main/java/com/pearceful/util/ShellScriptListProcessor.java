@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by ppearce on 2016-02-04.
@@ -15,7 +17,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * Read a file that contains commands or shell scripts (one per line) to execute
  * in parallel.
  *
- * Example file is scripts.txt which contains for information about how
+ * Example file is scripts-dos.txt which contains for information about how
  * to configure what to run.
  *
  */
@@ -35,6 +37,8 @@ public class ShellScriptListProcessor {
         int exitStatus      = 0;
         int threadPoolSize  = 10;   // Should be configurable
         int timeoutSeconds  = 600;  // Should be configurable
+        String filter       = null;
+        LineFilter lineFilter   =   null;
 
         if(args.length < 2) {
             exitStatus      = 1;
@@ -50,6 +54,12 @@ public class ShellScriptListProcessor {
 
         Path path       = Paths.get(args[0]);
         String stEnv    = args[1];
+
+        if(args.length > 2) {
+            filter  = args[2];
+
+            lineFilter = new LineFilter(filter);
+        }
 
         if(null == stEnv || stEnv.trim().length() < 1) {
             exitStatus      = 2;
@@ -70,7 +80,11 @@ public class ShellScriptListProcessor {
 
         /////////////////////////////////////////
         // Process each non comment or blank line
-        LOGGER.debug(String.format("main: env [%s]", stEnv));
+        LOGGER.debug(
+                String.format("main: input [%s], env tag [%s], filter [%s]",
+                        path.getFileName(),
+                        stEnv,
+                        (null != lineFilter ? filter : "{NONE-SPECIFIED}")));
 
         try{
             List<String> lines  = Files.readAllLines(path);
@@ -86,20 +100,39 @@ public class ShellScriptListProcessor {
                     envValueToBeSet = possibleEnvValueToBeSet;
                 }
 
-                boolean selected                = lineToBeSelected(lineNumber, line, stEnv);
+                ////////////////////////////////////////////
+                // Start the selection process for this line
+                boolean selected        = lineToBeSelected(lineNumber, line, stEnv);
+                boolean passedFilter    = false;
+
+                if(selected) {
+                    //////////////////////////
+                    // Matched the environment
+                    String cmdLine = stripLeadingToken(line);
+
+                    if (null != lineFilter) {
+                        //////////////////////////////////////
+                        // A command line filter was specified
+                        passedFilter = lineFilter.isMatch(cmdLine);
+                    } else {
+                        passedFilter = true;
+                    }
+
+                    /////////////////////////////////////////////////////////////
+                    // Finally check if the line passed all checks to be executed
+                    if(passedFilter) {
+                        shellScripts.add(new ShellScriptProcessor(lineNumber, cmdLine, stEnv, envValueToBeSet));
+                    }
+                }
 
                 LOGGER.debug(
                         String.format(
-                                "main: selected [%-5s], line [%4d], envValue [%s], cmd [%s]",
+                                "main: selected [%-5s], passedFilter [%-5s], line [%4d], envValue [%s], cmd [%s]",
                                 selected,
+                                passedFilter,
                                 lineNumber,
                                 envValueToBeSet,
                                 line));
-
-                if(selected) {
-                    String cmdLine = stripLeadingToken(line);
-                    shellScripts.add(new ShellScriptProcessor(lineNumber, cmdLine, stEnv, envValueToBeSet));
-                }
             }
 
             //////////////////////////////
@@ -150,7 +183,7 @@ public class ShellScriptListProcessor {
      * @param line
      * @return
      */
-    public static String stripLeadingToken(final String line) {
+    protected static String stripLeadingToken(final String line) {
         String restOfLine   = "";
 
         if(null == line) return "";
@@ -184,7 +217,7 @@ public class ShellScriptListProcessor {
      *
      * @return true if the line can be executed; else false
      */
-    public static boolean lineToBeSelected(final int lineNumber, final String line, final String tag) {
+    protected static boolean lineToBeSelected(final int lineNumber, final String line, final String tag) {
         if(null == line)        return false;
 
         if(null == tag)         return false;
@@ -243,7 +276,7 @@ public class ShellScriptListProcessor {
         return false;
     }
 
-    public static String valueToBeSelected(final int lineNumber, final String line, final String tag) {
+    protected static String valueToBeSelected(final int lineNumber, final String line, final String tag) {
         if(null == line)        return null;
 
         if(null == tag)         return null;
@@ -265,5 +298,85 @@ public class ShellScriptListProcessor {
         }
 
         return null;
+    }
+
+    static class LineFilter {
+        public static final String REGEX_FILTER_PREFIX          =   "=~";
+        public static final String REGEX_FILTER_PREFIX_INVERTED =   "!~";
+        public static final String PLAIN_FILTER_PREFIX          =   "==";
+        public static final String PLAIN_FILTER_PREFIX_INVERTED =   "!=";
+
+        Pattern regex            = null;
+        String rawFilterText     = null;
+        String plainFilterText   = null;
+        boolean invertMatch      = false;
+
+        public LineFilter(final String rawFilterText) {
+            this.rawFilterText  =   rawFilterText;
+
+            setUp(rawFilterText);
+        }
+
+        public boolean isMatch(final String text) {
+            boolean matched =   false;
+
+            if(null != regex) {
+                Matcher matcher =   regex.matcher(text);
+                matched         =   matcher.find();
+            } else {
+                matched         =   text.contains(plainFilterText);
+            }
+
+            if(invertMatch) {
+                matched = ! matched;
+            }
+
+            return matched;
+        }
+
+        protected void setUp(final String filterText) {
+            if(null == filterText || filterText.length() < 1) {
+                throw new IllegalArgumentException("Null or empty filter text specified");
+            }
+
+            rawFilterText = filterText;
+
+            if(filterText.startsWith(REGEX_FILTER_PREFIX)) {
+                regex = Pattern.compile(filterText.substring(REGEX_FILTER_PREFIX.length()));
+
+            } else if(filterText.startsWith(REGEX_FILTER_PREFIX_INVERTED)) {
+                regex = Pattern.compile(filterText.substring(REGEX_FILTER_PREFIX_INVERTED.length()));
+                invertMatch =   true;
+
+            } else if(filterText.startsWith(PLAIN_FILTER_PREFIX)) {
+                if(filterText.length() < 3) {
+                    throw new IllegalArgumentException(
+                            "Invalid filter text specified [" + filterText + "]");
+                }
+                plainFilterText = filterText.substring(PLAIN_FILTER_PREFIX.length());
+
+            } else if(filterText.startsWith(PLAIN_FILTER_PREFIX_INVERTED)) {
+                if(filterText.length() < 3) {
+                    throw new IllegalArgumentException(
+                            "Invalid filter text specified [" + filterText + "]");
+                }
+                plainFilterText = filterText.substring(PLAIN_FILTER_PREFIX_INVERTED.length());
+                invertMatch =   true;
+
+            } else {
+                if(filterText.startsWith(PLAIN_FILTER_PREFIX)) {
+                    plainFilterText = filterText.substring(PLAIN_FILTER_PREFIX.length());
+                } else {
+                    ///////////////////////////
+                    // The default if no prefix
+                    plainFilterText = filterText;
+                }
+
+                if(plainFilterText.length() < 1) {
+                    throw new IllegalArgumentException(
+                            "Invalid filter text specified [" + filterText + "]");
+                }
+            }
+        }
     }
 }
