@@ -268,45 +268,70 @@ public class SelectorTest extends TestCase {
     public void testValidPlainFilter() {
         String rawFilterText    = " ";
         String cmdLine          =   "";
+        int lineNumber          = 0;
+
         ShellScriptListProcessor.LineFilter clf =
                 new ShellScriptListProcessor.LineFilter(rawFilterText);
 
-        assertFalse(clf.isMatch(cmdLine));
+        assertFalse(clf.isMatch(lineNumber, cmdLine));
 
         ////////////////////////////////////////////
         cmdLine = "One two";
-        assertTrue(clf.isMatch(cmdLine));
+        assertTrue(clf.isMatch(lineNumber, cmdLine));
 
         rawFilterText    =
                 String.format("%s ", ShellScriptListProcessor.LineFilter.PLAIN_FILTER_PREFIX);
         clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
-        assertTrue(clf.isMatch(cmdLine));
+        assertTrue(clf.isMatch(lineNumber, cmdLine));
 
         ////////////////////////////////////////////
         cmdLine = "One=two";
         rawFilterText    =
                 String.format("%s=", ShellScriptListProcessor.LineFilter.PLAIN_FILTER_PREFIX);
         clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
-        assertTrue(clf.isMatch(cmdLine));
+        assertTrue(clf.isMatch(lineNumber, cmdLine));
 
+        ////////////////////////////////////////////
+        cmdLine = "One=two";
+        rawFilterText    =
+                String.format("%s0%s",
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX,
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX);
+        clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
+        assertTrue(clf.isMatch(lineNumber, cmdLine));
+        assertFalse(clf.isMatch(1, cmdLine));
+
+        ////////////////////////////////////////////
+        cmdLine = "One=two";
+        rawFilterText    =
+                String.format("%s0%s2%s3%s",
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX,
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX,
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX,
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX);
+        clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
+        assertTrue(clf.isMatch(lineNumber, cmdLine));
+        assertFalse(clf.isMatch(1, cmdLine));
+        assertTrue(clf.isMatch(2, cmdLine));
     }
 
     public void testValidPlainFilterInverted() {
         String rawFilterText    = " ";
         String cmdLine          = " ";
+        int lineNumber          = 0;
 
         rawFilterText    =
                 String.format("%s ", ShellScriptListProcessor.LineFilter.PLAIN_FILTER_PREFIX_INVERTED);
         ShellScriptListProcessor.LineFilter clf =
                 new ShellScriptListProcessor.LineFilter(rawFilterText);
-        assertFalse(clf.isMatch(cmdLine));
+        assertFalse(clf.isMatch(lineNumber, cmdLine));
 
         ////////////////////////////////////////////
         cmdLine = "One=two";
         rawFilterText    =
                 String.format("%s=", ShellScriptListProcessor.LineFilter.PLAIN_FILTER_PREFIX_INVERTED);
         clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
-        assertFalse(clf.isMatch(cmdLine));
+        assertFalse(clf.isMatch(lineNumber, cmdLine));
 
     }
 
@@ -314,11 +339,12 @@ public class SelectorTest extends TestCase {
         String rawFilterText    =
                 String.format("%s.*", ShellScriptListProcessor.LineFilter.REGEX_FILTER_PREFIX);
         String cmdLine  =   " ";
+        int lineNumber          = 0;
 
         ShellScriptListProcessor.LineFilter clf =
                 new ShellScriptListProcessor.LineFilter(rawFilterText);
 
-        assertTrue(clf.isMatch(cmdLine));
+        assertTrue(clf.isMatch(lineNumber, cmdLine));
 
         /////////////////////////////////////
         rawFilterText   =
@@ -329,21 +355,30 @@ public class SelectorTest extends TestCase {
         clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
 
         cmdLine =   "play 123";
-        assertTrue(clf.isMatch(cmdLine));
+        assertTrue(clf.isMatch(lineNumber, cmdLine));
 
-        cmdLine =   "play one two three";
-        assertFalse(clf.isMatch(cmdLine));
+        /////////////////////////////////////
+        rawFilterText   =
+                String.format(
+                        "%s [A-z]{3}",
+                        ShellScriptListProcessor.LineFilter.REGEX_FILTER_PREFIX);
+
+        clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
+
+        cmdLine =   "play Six";
+        assertTrue(clf.isMatch(lineNumber, cmdLine));
     }
 
     public void testValidRegexFilterInverted() {
         String rawFilterText    =
                 String.format("%s.*", ShellScriptListProcessor.LineFilter.REGEX_FILTER_PREFIX_INVERTED);
         String cmdLine  =   "";
+        int lineNumber          = 0;
 
         ShellScriptListProcessor.LineFilter clf =
                 new ShellScriptListProcessor.LineFilter(rawFilterText);
 
-        assertFalse(clf.isMatch(cmdLine));
+        assertFalse(clf.isMatch(lineNumber, cmdLine));
 
         /////////////////////////////////////
         rawFilterText   =
@@ -354,10 +389,10 @@ public class SelectorTest extends TestCase {
         clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
 
         cmdLine =   "play 123";
-        assertFalse(clf.isMatch(cmdLine));
+        assertFalse(clf.isMatch(lineNumber, cmdLine));
 
         cmdLine =   "play one two three";
-        assertTrue(clf.isMatch(cmdLine));
+        assertTrue(clf.isMatch(lineNumber, cmdLine));
     }
 
     public void testInvalidRegexFilter() {

@@ -113,7 +113,7 @@ public class ShellScriptListProcessor {
                     if (null != lineFilter) {
                         //////////////////////////////////////
                         // A command line filter was specified
-                        passedFilter = lineFilter.isMatch(cmdLine);
+                        passedFilter = lineFilter.isMatch(lineNumber, cmdLine);
                     } else {
                         passedFilter = true;
                     }
@@ -305,11 +305,13 @@ public class ShellScriptListProcessor {
         public static final String REGEX_FILTER_PREFIX_INVERTED =   "!~";
         public static final String PLAIN_FILTER_PREFIX          =   "==";
         public static final String PLAIN_FILTER_PREFIX_INVERTED =   "!=";
+        public static final String LINE_NUMBER_PREFIX           =   "#";
 
         Pattern regex            = null;
         String rawFilterText     = null;
         String plainFilterText   = null;
         boolean invertMatch      = false;
+        boolean lineNumberMatch  = false;
 
         public LineFilter(final String rawFilterText) {
             this.rawFilterText  =   rawFilterText;
@@ -317,14 +319,23 @@ public class ShellScriptListProcessor {
             setUp(rawFilterText);
         }
 
-        public boolean isMatch(final String text) {
+        public boolean isMatch(final int lineNumber, final String text) {
             boolean matched =   false;
 
             if(null != regex) {
                 Matcher matcher =   regex.matcher(text);
                 matched         =   matcher.find();
             } else {
-                matched         =   text.contains(plainFilterText);
+                if(lineNumberMatch) {
+                    matched = plainFilterText.contains(
+                            String.format(
+                                    "%s%d%s",
+                                    LINE_NUMBER_PREFIX,
+                                    lineNumber,
+                                    LINE_NUMBER_PREFIX));
+                } else {
+                    matched = text.contains(plainFilterText);
+                }
             }
 
             if(invertMatch) {
@@ -341,7 +352,11 @@ public class ShellScriptListProcessor {
 
             rawFilterText = filterText;
 
-            if(filterText.startsWith(REGEX_FILTER_PREFIX)) {
+            if(filterText.startsWith(LINE_NUMBER_PREFIX)) {
+                plainFilterText = filterText;
+                lineNumberMatch = true;
+
+            } else if(filterText.startsWith(REGEX_FILTER_PREFIX)) {
                 regex = Pattern.compile(filterText.substring(REGEX_FILTER_PREFIX.length()));
 
             } else if(filterText.startsWith(REGEX_FILTER_PREFIX_INVERTED)) {
