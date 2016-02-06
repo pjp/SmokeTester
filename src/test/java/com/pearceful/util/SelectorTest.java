@@ -2,11 +2,6 @@ package com.pearceful.util;
 
 import junit.framework.TestCase;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.IntStream;
-
 import static java.lang.Thread.sleep;
 
 /**
@@ -216,5 +211,36 @@ public class SelectorTest extends TestCase {
         assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "UAT"));
         assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "PROD"));
         assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "MickeyMouse"));
+    }
+
+    public void testEnvValueSelectorForNull() {
+        String line     = null ;
+        int lineNumber  = 0;
+        String env      = "DEV";
+        String cmd      = "echo Howzit";
+
+        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, null));
+        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, env));
+
+        /////////////////////////////////////////
+        line = "#:DEV: " + cmd;
+        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, env));
+
+    }
+    public void testEnvValueSelectorForValue() {
+        String env      = "DEV";
+        String value    = "echo Howzit";
+        int lineNumber  = 0;
+        String line     = String.format(
+                "%s%s%s%s%s",
+                ShellScriptListProcessor.COMMENT_LEADER,
+                ShellScriptListProcessor.VALUE_SENTINAL,
+                env,
+                ShellScriptListProcessor.VALUE_SENTINAL,
+                value) ;
+
+        assertEquals(value, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, env));
+        assertEquals(value, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, env.toLowerCase()));
+        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, "SIT"));
     }
 }

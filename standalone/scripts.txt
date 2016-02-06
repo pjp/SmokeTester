@@ -9,6 +9,12 @@
 #
 # The format of this file is :-
 #
+#=DEV=Hello from DEV
+#=SIT=Hello from SIT
+#=UAT=Hello from UAT
+#=QA=sHello from QA
+#=PROD=Hello from PROD
+#
 #    Lines starting with a '#' may be a comment or a line to be executed
 #    that starts with '#' then followed by a tag descriptor, then whitespace
 #    followed by a command line to execute (to end of line)
@@ -22,7 +28,8 @@
 #       Do NOT leave whitespace inside the ':'
 #       Do note that the tag descriptors are case insensitive in regard to matching
 #          against the value of st.env
-
+#
+#
 #   Sample tag descriptors:-
 #
 #   :+:         select regardless of value of st.env
@@ -75,7 +82,7 @@
 # environmental variables will be available as normal to it as usual.
 #
 # This command should run in ALL environments
-#:+:   cmd /c echo hello world %st.env% = %st.value%
+#:+:   cmd /c echo I'm in [%st.env%] with value [%st.value%]
 #
 #####################################
 # This command should only run in DEV

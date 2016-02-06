@@ -24,6 +24,7 @@ public class ShellScriptListProcessor {
     public static final String TAG_SENTINAL         = ":";
     public static final String SELECTED_PREFIX      = "+";
     public static final String NOT_SELECTED_PREFIX  = "-";
+    public static final String VALUE_SENTINAL       = "=";
 
     public static final String TAG_ENV_NAME     = "st.env";
     public static final String TAG_ENV_VALUE    = "st.value";
@@ -35,9 +36,9 @@ public class ShellScriptListProcessor {
         int threadPoolSize  = 10;   // Should be configurable
         int timeoutSeconds  = 600;  // Should be configurable
 
-        if(args.length < 1) {
+        if(args.length < 2) {
             exitStatus      = 1;
-            String errMsg   = "Need a file name to read as input!";
+            String errMsg   = "Need a file name to read as input and an environment selector tag!";
 
             System.err.println(errMsg);
             LOGGER.warn("main: " + errMsg);
@@ -48,14 +49,11 @@ public class ShellScriptListProcessor {
         }
 
         Path path       = Paths.get(args[0]);
+        String stEnv    = args[1];
 
-        ////////////
-        // Mandatory
-        String stEnv    = System.getProperty(TAG_ENV_NAME);
-
-        if(null == stEnv) {
+        if(null == stEnv || stEnv.trim().length() < 1) {
             exitStatus      = 2;
-            String errMsg   = "No system property " + TAG_ENV_NAME + " defined!";
+            String errMsg   = "No environment selector tag defined!";
 
             System.err.println(errMsg);
 
@@ -66,10 +64,9 @@ public class ShellScriptListProcessor {
             System.exit(exitStatus);
         }
 
-        // Optional
-        String stVal                        = System.getProperty(TAG_ENV_VALUE);
-
         Set<SmokeTestStrategy> shellScripts = new CopyOnWriteArraySet<>();
+
+        String envValueToBeSet  =    null;
 
         /////////////////////////////////////////
         // Process each non comment or blank line
@@ -82,13 +79,26 @@ public class ShellScriptListProcessor {
             for(String line : lines) {
                 lineNumber++;
 
-                boolean selected = lineToBeSelected(lineNumber, line, stEnv);
+                ////////////////////////////////////////////////////////////////////
+                // Determine if a matching variable for the environment has been set
+                String possibleEnvValueToBeSet  = valueToBeSelected(lineNumber, line, stEnv);
+                if(null != possibleEnvValueToBeSet) {
+                    envValueToBeSet = possibleEnvValueToBeSet;
+                }
 
-                LOGGER.debug(String.format("main: selected [%-5s], line [%4d], cmd [%s]", selected, lineNumber, line));
+                boolean selected                = lineToBeSelected(lineNumber, line, stEnv);
+
+                LOGGER.debug(
+                        String.format(
+                                "main: selected [%-5s], line [%4d], envValue [%s], cmd [%s]",
+                                selected,
+                                lineNumber,
+                                envValueToBeSet,
+                                line));
 
                 if(selected) {
                     String cmdLine = stripLeadingToken(line);
-                    shellScripts.add(new ShellScriptProcessor(lineNumber, cmdLine, stEnv, stVal));
+                    shellScripts.add(new ShellScriptProcessor(lineNumber, cmdLine, stEnv, envValueToBeSet));
                 }
             }
 
@@ -231,5 +241,29 @@ public class ShellScriptListProcessor {
         }
 
         return false;
+    }
+
+    public static String valueToBeSelected(final int lineNumber, final String line, final String tag) {
+        if(null == line)        return null;
+
+        if(null == tag)         return null;
+
+        if(line.length() < 5)   return null;
+
+        if (line.startsWith(COMMENT_LEADER + VALUE_SENTINAL)) {
+            ////////////////////////////////////////
+            // Extract the first token from the line
+            StringTokenizer st = new StringTokenizer(line.substring(2), VALUE_SENTINAL);
+
+            if (st.countTokens() < 2) return null;
+
+            // Extract the environment tag and it's value
+            String stEnv = st.nextToken();
+            String value = line.substring(stEnv.length() + 1);
+
+            if (tag.toLowerCase().equals(stEnv.toLowerCase())) return value.substring(2);
+        }
+
+        return null;
     }
 }
