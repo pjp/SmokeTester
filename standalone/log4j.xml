@@ -27,7 +27,7 @@
 
     </appender>
 
-    <logger name="com.pearceful.util.SmokeTestContext" additivity="false">
+    <logger name="com.pearceful.util" additivity="false">
         <level value="DEBUG"/>
         <appender-ref ref="SmokeTestFileAppender" />
     </logger>

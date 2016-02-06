@@ -20,6 +20,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     private String envValue;
     private long elapsedNs              = 0 ;
     private String msg                  = "";
+    private static final Logger LOGGER                  = Logger.getLogger(ShellScriptProcessor.class);
 
     public ShellScriptProcessor(
             final int lineNumber,
@@ -78,11 +79,15 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         } catch (IOException e) {
             elapsedNs = System.nanoTime() - startNs;
 
+            LOGGER.error(String.format("execute: line [%s %s]", id, cmdLine), e);
+
             msg = cmdDetails(0, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
 
             state = SmokeTestResult.STATE.EXEC_ERROR;
         } catch (InterruptedException e) {
             elapsedNs = System.nanoTime() - startNs;
+
+            LOGGER.error(String.format("execute: line [%s %s]", id, cmdLine), e);
 
             msg = cmdDetails(0, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
 
@@ -93,6 +98,8 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     @Override
     public SmokeTestResult validate() {
         SmokeTestResult result  = new SmokeTestResult(id, state, elapsedNs, msg);
+
+        LOGGER.trace(String.format("validate: result [%s] line [%s %s]", result, id, cmdLine));
 
         return result;
     }

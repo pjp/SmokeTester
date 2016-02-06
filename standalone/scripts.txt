@@ -1,7 +1,78 @@
 ##############################################################
-# A couple of commands to run, should work on Unix and Windows
+#    When the ShellScriptListProcessor is executed, two System variables should be set
+#    on the command line (st.env & st.dev) to specify the logical environment to run against
+#    and a general purpose value for use in that environment. Both of these variables are
+#    exposed as environment variables with the same names and values.
 #
-# Note that for environmental variable expansion, a shell has to be specified.
+#    e.g.
+#       -Dst.env=DEV -Dst.value=blah
+#
+# The format of this file is :-
+#
+#    Lines starting with a '#' may be a comment or a line to be executed
+#    that starts with '#' then followed by a tag descriptor, then whitespace
+#    followed by a command line to execute (to end of line)
+#
+#    A tag descriptor is one or more strings prefixed with a '#' and then
+#    SURROUNDED with ':' that will be matched against the value specified
+#    for st.env (case insensitive).
+#
+#    Notes:
+#       Do NOT leave whitespace between the first '#' and the ':'
+#       Do NOT leave whitespace inside the ':'
+#       Do note that the tag descriptors are case insensitive in regard to matching
+#          against the value of st.env
+
+#   Sample tag descriptors:-
+#
+#   :+:         select regardless of value of st.env
+#   :-:         deselect regardless of value of st.env (disabled)
+#   :sss:       select only if exact match of sss to value of st.env
+#   :+sss:      same as above.
+#   :aaa:bbb:   select only if exact match of aaa or bbb to value of st.env
+#   :-sss:      deselect only if exact match of sss to the value of st.env, else selected
+#   :-aaa:-bbb: deselect if aaa or bbb are exact matches to the value of st.env, else selected
+#   :-aaa:bbb:  deselect only if exact match of -aaa to the value of st.env, else selected (bbb ignored)
+#
+#   Example lines :-
+#
+#:+:             echo "One"
+#:-:             echo "Two"
+#:DEV:           echo "Three"
+#:-PROD:         echo "Four"
+#:DEV:UAT:       echo "Five"
+#:-SIT:-UAT:     echo "Six"
+#:qa:            echo "Seven"
+#
+# Given that the value of st.env=DEV,
+#
+#   We will get the outputs One Three Four Five Six
+#
+#
+# Given that the value of st.env=SIT,
+#
+#   We will get the outputs One Four
+#
+#
+# Given that the value of st.env=UAT,
+#
+#   We will get the outputs One Four Five
+#
+#
+# Given that the value of st.env=PROD,
+#
+#   We will get the outputs One Six
+#
+#
+# Given that the value of st.env=QA,
+#
+#   We will get the outputs One Four Six
+#
+#
+#####################################
+# Note that for environmental variable expansion directly on the command line
+# a shell has to be specified. If the command is a shell script, then the
+# environmental variables will be available as normal to it as usual.
 #
 # This command should run in ALL environments
 #:+:   cmd /c echo hello world %st.env% = %st.value%
