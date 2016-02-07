@@ -24,6 +24,12 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     private String msg                  = "";
     private static final Logger LOGGER                  = Logger.getLogger(ShellScriptProcessor.class);
 
+    public static final String UNIX_SHELL           = "bash";
+    public static final String UNIX_SHELL_PARAM     = "-c";
+
+    public static final String WINDOWS_SHELL        = "cmd";
+    public static final String WINDOWS_SHELL_PARAM  = "/c";
+
     public ShellScriptProcessor(
             final int lineNumber,
             final String cmdLine,
@@ -45,21 +51,23 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         try {
             ProcessBuilder pb = null;
 
-            //////////////////
-            // Quick and dirty
+            ////////////////////////////////////////////////////////
+            // Quick and dirty test for determining the shell to use
             String osName   = System.getProperty("os.name");
             osName          = osName.toLowerCase(Locale.ENGLISH);
 
             if (osName.indexOf("windows") != -1) {
-                pb = new ProcessBuilder("cmd", "/c", cmdLine);
+                pb = new ProcessBuilder(WINDOWS_SHELL, WINDOWS_SHELL_PARAM, cmdLine);
             } else {
-                pb = new ProcessBuilder("bash", "-c", cmdLine);
+                pb = new ProcessBuilder(UNIX_SHELL, UNIX_SHELL_PARAM, cmdLine);
             }
 
+            //////////////////////////////
+            // Get the current environment
             Map<String, String> env = pb.environment();
 
-            ///////////////////////////////////
-            // Add to the environment is needed
+            /////////////////////////////////////////////////////////
+            // Add to the environment is needed our bespoke variables
             if (null != envName) {
                 env.put(ShellScriptListProcessor.TAG_ENV_NAME, envName);
             }
@@ -68,6 +76,8 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
                 env.put(ShellScriptListProcessor.TAG_ENV_VALUE, envValue);
             }
 
+            ////////////////////////////////////////////////////////////////
+            // Actually execute the command line and wait for it to complete
             Process proc    = pb.start();
             exitValue       = proc.waitFor();
 
