@@ -81,12 +81,11 @@
 #
 #
 #####################################
-# Note that for environmental variable expansion directly on the command line
-# a shell has to be specified. If the command is a shell script, then the
-# environmental variables will be available as normal to it as usual.
+# If the command is a shell script, then the
+# environmental variables ($ST_ENV & $ST_VALUE) will be available as normal.
 #
 # This command should run in ALL environments
-#:+:   bash -c echo I'm in [$st_env] with value [$st_value]
+#:+: ./e.sh
 #
 #####################################
 # This command should only run in DEV
