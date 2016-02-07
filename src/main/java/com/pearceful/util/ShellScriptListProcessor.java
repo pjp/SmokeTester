@@ -29,8 +29,8 @@ public class ShellScriptListProcessor {
     public static final String VALUE_SENTINAL       = "=";
     public static final String GLOBAL_SENTINAL      = "@";
 
-    public static final String TAG_ENV_NAME     = "st.env";
-    public static final String TAG_ENV_VALUE    = "st.value";
+    public static final String TAG_ENV_NAME     = "st_env";
+    public static final String TAG_ENV_VALUE    = "st_value";
 
     public static final String TIMEOUT_SECONDS  = "TIMEOUT_SECONDS";
     public static final String THREAD_POOL_SIZE = "THREAD_POOL_SIZE";
