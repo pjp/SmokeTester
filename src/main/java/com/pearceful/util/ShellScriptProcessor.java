@@ -37,73 +37,6 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
 
     @Override
     public void execute() throws SmokeTestException {
-        //executeOrig();
-        executeNew();
-    }
-
-    public void executeOrig() throws SmokeTestException {
-        Runtime rt = Runtime.getRuntime();
-
-        long startNs    = System.nanoTime();
-        int exitValue   = -1;
-
-        ///////////////////////////
-        // Process the command line
-        try {
-            // Need to get all the existing env variables and add two more
-            Map<String, String> currentEnv = System.getenv();
-
-            List<String> newEnvList = new ArrayList<>();
-
-            if (null != envName) {
-                newEnvList.add(ShellScriptListProcessor.TAG_ENV_NAME + "=" + envName);
-            }
-
-            if (null != envValue) {
-                newEnvList.add(ShellScriptListProcessor.TAG_ENV_VALUE + "=" + envValue);
-            }
-
-            /////////////////////////////
-            // Add the existing variables
-            for(Map.Entry e : currentEnv.entrySet()) {
-                newEnvList.add(e.getKey() + "=" + e.getValue());
-            }
-
-            ///////////////////////////////
-            // Convert the List to an array
-            String[] newEnv = newEnvList.toArray(new String[newEnvList.size()]);
-
-            Process proc = rt.exec(cmdLine, newEnv);
-
-            exitValue = proc.waitFor();
-
-            elapsedNs = System.nanoTime() - startNs;
-
-            msg = gatherOutputs(proc, elapsedNs);
-
-            if(exitValue == 0) {
-                state = SmokeTestResult.STATE.USER_PASS;
-            }
-        } catch (IOException e) {
-            elapsedNs = System.nanoTime() - startNs;
-
-            LOGGER.error(String.format("execute: line [%s %s]", id, cmdLine), e);
-
-            msg = cmdDetails(exitValue, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
-
-            state = SmokeTestResult.STATE.EXEC_ERROR;
-        } catch (InterruptedException e) {
-            elapsedNs = System.nanoTime() - startNs;
-
-            LOGGER.error(String.format("execute: line [%s %s]", id, cmdLine), e);
-
-            msg = cmdDetails(exitValue, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
-
-            state = SmokeTestResult.STATE.EXEC_ERROR;
-        }
-    }
-
-    public void executeNew() throws SmokeTestException {
         long startNs    = System.nanoTime();
         int exitValue   = -1;
 
@@ -171,18 +104,6 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         LOGGER.trace(String.format("validate: result [%s] line [%s %s]", result, id, cmdLine));
 
         return result;
-    }
-
-    protected String loadStream(InputStream s) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(s));
-        StringBuilder sb = new StringBuilder();
-        String line;
-
-        while ((line = br.readLine()) != null) {
-            sb.append(line).append("\n");
-        }
-
-        return sb.toString();
     }
 
     protected String gatherOutputs(final Process proc, final long elapsedNs) {
