@@ -40,8 +40,8 @@ public class ShellScriptListProcessor {
 
     public static void main(String[] args) {
         int exitStatus      = 0;
-        int threadPoolSize  = 5;   // Should be configurable
-        int timeoutSeconds  = 600;  // Should be configurable
+        int threadPoolSize  = 5;
+        int timeoutSeconds  = 600;
         String filter       = null;
         LineFilter lineFilter   =   null;
 
