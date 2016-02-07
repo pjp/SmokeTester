@@ -117,7 +117,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
 
     protected String cmdDetails(final int exitCode, final String id, final String cmdLine, final long elapsedNs) {
         return String.format(
-                "%s:, line [%s], cmd [%s], elapsedNs [%d]",
+                "%s: line [%s], cmd [%s], elapsedNs [%d]",
                 (exitCode == 0 ? "PASS" : "FAIL"),
                 id,
                 cmdLine,

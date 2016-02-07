@@ -12,7 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by ppearce on 2016-02-04.
+ * Created by Paul Pearce on 2016-01-04.
  *
  * Read a file that contains commands or shell scripts (one per line) to execute
  * in parallel.
@@ -86,6 +86,10 @@ public class ShellScriptListProcessor {
                         stEnv,
                         (null != lineFilter ? filter : "{NONE-SPECIFIED}")));
 
+        int failedCount = 0;
+        int passedCount = 0;
+        long start      = System.nanoTime();
+
         try{
             List<String> lines  = Files.readAllLines(path);
             int lineNumber      = 0;
@@ -137,15 +141,13 @@ public class ShellScriptListProcessor {
 
             //////////////////////////////
             // Run the scripts in parallel
+
             List<SmokeTestResult> results =
                     SmokeTestContext.runSmokeTests(
                             shellScripts, threadPoolSize, timeoutSeconds);
 
             ///////////////////////////////////
             // Display the result for each test
-            int failedCount = 0;
-            int passedCount = 0;
-
             for(SmokeTestResult result : results) {
                 if(result.getState().equals(SmokeTestResult.STATE.USER_PASS)) {
                     passedCount++;
@@ -155,10 +157,6 @@ public class ShellScriptListProcessor {
 
                 System.out.println(result.getMessage());
             }
-
-            //////////
-            // Summary
-            System.out.printf("SUMMARY: There were %d pass(es) and %d failure(s)", passedCount, failedCount);
 
             ////////////////////////////////////////////////
             // Indicate if there was a failure to the caller
@@ -173,7 +171,21 @@ public class ShellScriptListProcessor {
             exitStatus = 3;
         }
 
-        LOGGER.info(String.format("main: exiting with [%d]", exitStatus));
+        long elapsed = (System.nanoTime() - start) / 1000000;
+
+        //////////
+        // Summary
+        String summary = String.format(
+                "SUMM: %d pass(es) - %d failure(s) - elapsed %d mS",
+                passedCount,
+                failedCount,
+                elapsed);
+
+        LOGGER.info(String.format("main: %s - exiting with [%d]\n", summary, exitStatus));
+
+        System.out.println(summary);
+
+        System.out.printf("EXIT: %d\n", exitStatus);
 
         System.exit(exitStatus);
     }
@@ -301,10 +313,10 @@ public class ShellScriptListProcessor {
     }
 
     static class LineFilter {
-        public static final String REGEX_FILTER_PREFIX          =   "=~";
-        public static final String REGEX_FILTER_PREFIX_INVERTED =   "!~";
-        public static final String PLAIN_FILTER_PREFIX          =   "==";
-        public static final String PLAIN_FILTER_PREFIX_INVERTED =   "!=";
+        public static final String REGEX_FILTER_PREFIX          =   "==";
+        public static final String REGEX_FILTER_PREFIX_INVERTED =   "=!";
+        public static final String PLAIN_FILTER_PREFIX          =   "~=";
+        public static final String PLAIN_FILTER_PREFIX_INVERTED =   "~!";
         public static final String LINE_NUMBER_PREFIX           =   "#";
 
         Pattern regex            = null;
