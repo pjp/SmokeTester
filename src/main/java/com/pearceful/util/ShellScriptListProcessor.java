@@ -168,6 +168,53 @@ public class ShellScriptListProcessor {
                 System.out.println(result.getMessage());
             }
 
+            /////////////////////////////////
+            // Determine the slowest commands
+            List<SmokeTestResult> slowestResults = new ArrayList<>() ;
+            slowestResults.addAll(results);
+
+            Collections.sort(slowestResults, new Comparator<SmokeTestResult>() {
+                @Override
+                public int compare(SmokeTestResult o1, SmokeTestResult o2) {
+                    int result = 0;
+
+                    if (o1.getElapsedNanoSeconds() > o2.getElapsedNanoSeconds()) {
+                        result = -1;
+                    } else if (o1.getElapsedNanoSeconds() < o2.getElapsedNanoSeconds()) {
+                       result = 1;
+                    }
+
+                    return result;
+                }
+            });
+
+            //////////////////////////
+            // Display the top slowest
+            int max = 5;
+            System.out.println("SUMM: Top " + max + " Slowest (PASS) responses follow.");
+
+            int count = 1;
+            for(SmokeTestResult result : slowestResults) {
+                if (count > max) {
+                    break;
+                }
+
+                if(result.getState().equals(SmokeTestResult.STATE.USER_PASS)) {
+                    System.out.println(result.getMessage());
+                    count++ ;
+                }
+            }
+
+            ////////////////////////////
+            // Display just the failures
+            System.out.println("SUMM: All (FAIL) responses follow.");
+
+            for(SmokeTestResult result : results) {
+                if(! result.getState().equals(SmokeTestResult.STATE.USER_PASS)) {
+                    System.out.println(result.getMessage());
+                }
+            }
+
             ////////////////////////////////////////////////
             // Indicate if there was a failure to the caller
             if(failedCount > 0) {
