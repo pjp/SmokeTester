@@ -86,7 +86,7 @@
 # environmental variables will be available as normal to it as usual.
 #
 # This command should run in ALL environments
-#:+:   cmd /c echo I'm in [%ST_ENV%] with value [%ST_VALUE%]
+#:+: echo I'm in [%ST_ENV%] with value [%ST_VALUE%]
 #
 #####################################
 # This command should only run in DEV

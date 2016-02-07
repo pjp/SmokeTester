@@ -4,9 +4,11 @@ import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -35,6 +37,11 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
 
     @Override
     public void execute() throws SmokeTestException {
+        //executeOrig();
+        executeNew();
+    }
+
+    public void executeOrig() throws SmokeTestException {
         Runtime rt = Runtime.getRuntime();
 
         long startNs    = System.nanoTime();
@@ -96,6 +103,67 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         }
     }
 
+    public void executeNew() throws SmokeTestException {
+        long startNs    = System.nanoTime();
+        int exitValue   = -1;
+
+        ///////////////////////////
+        // Process the command line
+        try {
+            ProcessBuilder pb = null;
+
+            //////////////////
+            // Quick and dirty
+            String osName   = System.getProperty("os.name");
+            osName          = osName.toLowerCase(Locale.ENGLISH);
+
+            if (osName.indexOf("windows") != -1) {
+                pb = new ProcessBuilder("cmd", "/c", cmdLine);
+            } else {
+                pb = new ProcessBuilder("bash", "-c", cmdLine);
+            }
+
+            Map<String, String> env = pb.environment();
+
+            ///////////////////////////////////
+            // Add to the environment is needed
+            if (null != envName) {
+                env.put(ShellScriptListProcessor.TAG_ENV_NAME, envName);
+            }
+
+            if (null != envValue) {
+                env.put(ShellScriptListProcessor.TAG_ENV_VALUE, envValue);
+            }
+
+            Process proc    = pb.start();
+            exitValue       = proc.waitFor();
+
+            elapsedNs = System.nanoTime() - startNs;
+
+            msg = gatherOutputs(proc, elapsedNs);
+
+            if(exitValue == 0) {
+                state = SmokeTestResult.STATE.USER_PASS;
+            }
+        } catch (IOException e) {
+            elapsedNs = System.nanoTime() - startNs;
+
+            LOGGER.error(String.format("execute: line [%s %s]", id, cmdLine), e);
+
+            msg = cmdDetails(exitValue, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
+
+            state = SmokeTestResult.STATE.EXEC_ERROR;
+        } catch (InterruptedException e) {
+            elapsedNs = System.nanoTime() - startNs;
+
+            LOGGER.error(String.format("execute: line [%s %s]", id, cmdLine), e);
+
+            msg = cmdDetails(exitValue, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
+
+            state = SmokeTestResult.STATE.EXEC_ERROR;
+        }
+    }
+
     @Override
     public SmokeTestResult validate() {
         SmokeTestResult result  = new SmokeTestResult(id, state, elapsedNs, msg);
@@ -103,6 +171,18 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         LOGGER.trace(String.format("validate: result [%s] line [%s %s]", result, id, cmdLine));
 
         return result;
+    }
+
+    protected String loadStream(InputStream s) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(s));
+        StringBuilder sb = new StringBuilder();
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+
+        return sb.toString();
     }
 
     protected String gatherOutputs(final Process proc, final long elapsedNs) {

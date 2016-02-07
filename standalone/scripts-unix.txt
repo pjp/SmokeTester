@@ -85,6 +85,7 @@
 # environmental variables ($ST_ENV & $ST_VALUE) will be available as normal.
 #
 # This command should run in ALL environments
+#:+: echo "Hi, on [$ST_ENV] with value [$ST_VALUE]"
 #:+: ./e.sh
 #
 #####################################
