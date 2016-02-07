@@ -37,7 +37,8 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     public void execute() throws SmokeTestException {
         Runtime rt = Runtime.getRuntime();
 
-        long startNs = System.nanoTime();
+        long startNs    = System.nanoTime();
+        int exitValue   = -1;
 
         ///////////////////////////
         // Process the command line
@@ -67,13 +68,13 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
 
             Process proc = rt.exec(cmdLine, newEnv);
 
-            proc.waitFor();
+            exitValue = proc.waitFor();
 
             elapsedNs = System.nanoTime() - startNs;
 
             msg = gatherOutputs(proc, elapsedNs);
 
-            if(proc.exitValue() == 0) {
+            if(exitValue == 0) {
                 state = SmokeTestResult.STATE.USER_PASS;
             }
         } catch (IOException e) {
@@ -81,7 +82,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
 
             LOGGER.error(String.format("execute: line [%s %s]", id, cmdLine), e);
 
-            msg = cmdDetails(0, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
+            msg = cmdDetails(exitValue, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
 
             state = SmokeTestResult.STATE.EXEC_ERROR;
         } catch (InterruptedException e) {
@@ -89,7 +90,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
 
             LOGGER.error(String.format("execute: line [%s %s]", id, cmdLine), e);
 
-            msg = cmdDetails(0, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
+            msg = cmdDetails(exitValue, id, cmdLine, elapsedNs) + ", ERROR: " + e.toString();
 
             state = SmokeTestResult.STATE.EXEC_ERROR;
         }

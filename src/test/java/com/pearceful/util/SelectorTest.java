@@ -215,22 +215,20 @@ public class SelectorTest extends TestCase {
 
     public void testEnvValueSelectorForNull() {
         String line     = null ;
-        int lineNumber  = 0;
         String env      = "DEV";
         String cmd      = "echo Howzit";
 
-        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, null));
-        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, env));
+        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(line, null));
+        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(line, env));
 
         /////////////////////////////////////////
         line = "#:DEV: " + cmd;
-        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, env));
+        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(line, env));
 
     }
     public void testEnvValueSelectorForValue() {
         String env      = "DEV";
         String value    = "echo Howzit";
-        int lineNumber  = 0;
         String line     = String.format(
                 "%s%s%s%s%s",
                 ShellScriptListProcessor.COMMENT_LEADER,
@@ -239,9 +237,9 @@ public class SelectorTest extends TestCase {
                 ShellScriptListProcessor.VALUE_SENTINAL,
                 value) ;
 
-        assertEquals(value, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, env));
-        assertEquals(value, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, env.toLowerCase()));
-        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(lineNumber, line, "SIT"));
+        assertEquals(value, ShellScriptListProcessor.valueToBeSelected(line, env));
+        assertEquals(value, ShellScriptListProcessor.valueToBeSelected(line, env.toLowerCase()));
+        assertEquals(null,  ShellScriptListProcessor.valueToBeSelected(line, "SIT"));
     }
 
     public void testEmptyOrNullFilter() {

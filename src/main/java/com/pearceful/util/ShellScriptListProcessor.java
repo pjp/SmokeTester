@@ -27,15 +27,20 @@ public class ShellScriptListProcessor {
     public static final String SELECTED_PREFIX      = "+";
     public static final String NOT_SELECTED_PREFIX  = "-";
     public static final String VALUE_SENTINAL       = "=";
+    public static final String GLOBAL_SENTINAL      = "@";
 
     public static final String TAG_ENV_NAME     = "st.env";
     public static final String TAG_ENV_VALUE    = "st.value";
+
+    public static final String TIMEOUT_SECONDS  = "TIMEOUT_SECONDS";
+    public static final String THREAD_POOL_SIZE = "THREAD_POOL_SIZE";
+    public static final int INT_VALUE_NOT_SET   = -1;
 
     private static final Logger LOGGER                  = Logger.getLogger(ShellScriptListProcessor.class);
 
     public static void main(String[] args) {
         int exitStatus      = 0;
-        int threadPoolSize  = 10;   // Should be configurable
+        int threadPoolSize  = 5;   // Should be configurable
         int timeoutSeconds  = 600;  // Should be configurable
         String filter       = null;
         LineFilter lineFilter   =   null;
@@ -76,6 +81,8 @@ public class ShellScriptListProcessor {
 
         int failedCount = 0;
         int passedCount = 0;
+        int globalValue = -1;
+
         long start      = System.nanoTime();
 
         try{
@@ -85,9 +92,25 @@ public class ShellScriptListProcessor {
             for(String line : lines) {
                 lineNumber++;
 
+                globalValue = getGlobalIntSetting(line, TIMEOUT_SECONDS);
+                if(INT_VALUE_NOT_SET != globalValue) {
+                    timeoutSeconds = globalValue;
+                    LOGGER.debug("main: Setting timeout to " + globalValue + " from line " + lineNumber);
+
+                    continue;
+                }
+
+                globalValue = getGlobalIntSetting(line, THREAD_POOL_SIZE);
+                if(INT_VALUE_NOT_SET != globalValue) {
+                    threadPoolSize = globalValue;
+                    LOGGER.debug("main: Setting threadPoolSize to " + globalValue + " from line " + lineNumber);
+
+                    continue;
+                }
+
                 ////////////////////////////////////////////////////////////////////
                 // Determine if a matching variable for the environment has been set
-                String possibleEnvValueToBeSet  = valueToBeSelected(lineNumber, line, stEnv);
+                String possibleEnvValueToBeSet  = valueToBeSelected(line, stEnv);
                 if(null != possibleEnvValueToBeSet) {
                     envValueToBeSet = possibleEnvValueToBeSet;
                 }
@@ -129,7 +152,6 @@ public class ShellScriptListProcessor {
 
             //////////////////////////////
             // Run the scripts in parallel
-
             List<SmokeTestResult> results =
                     SmokeTestContext.runSmokeTests(
                             shellScripts, threadPoolSize, timeoutSeconds);
@@ -176,6 +198,44 @@ public class ShellScriptListProcessor {
         doExit(exitStatus);
     }
 
+    private static int getGlobalIntSetting(final String line, final String name) {
+        int value = INT_VALUE_NOT_SET;
+
+        String globalValue = getGlobalStringSetting(line, name);
+
+        if(null != globalValue) {
+            value = Integer.parseInt(globalValue.trim());
+        }
+
+        return value ;
+    }
+
+    private static String getGlobalStringSetting(final String line, final String name) {
+        String value = null;
+
+        if(null == line)        return null;
+
+        if(line.length() < 5)   return null;
+
+        if (line.startsWith(COMMENT_LEADER + GLOBAL_SENTINAL)) {
+            ////////////////////////////////////////
+            // Extract the first token from the line
+            StringTokenizer st = new StringTokenizer(line.substring(2), GLOBAL_SENTINAL);
+
+            if (st.countTokens() < 2) return null;
+
+            ///////////////////////////////////
+            // Extract the global variable name
+            String globalName   = st.nextToken();
+            if(name.toLowerCase().equals(globalName.toLowerCase())) {
+                // Matched what we are looking for, get it's value
+                value = line.substring(name.length() + 3);
+            }
+        }
+
+        return value ;
+    }
+
     private static void showUsage(final int exitStatus, final String errMsg) {
         StringBuilder usage = new StringBuilder();
 
@@ -193,6 +253,28 @@ public class ShellScriptListProcessor {
         usage.append("      " + LineFilter.PLAIN_FILTER_PREFIX + "contains this text\n");
         usage.append("      " + LineFilter.PLAIN_FILTER_PREFIX_INVERTED + "dont contain this text\n");
         usage.append("      " + LineFilter.LINE_NUMBER_SENTINAL + "match this line number" + LineFilter.LINE_NUMBER_SENTINAL + "\n");
+        usage.append("\n");
+        usage.append("Examples:\n");
+        usage.append("   ShellScriptListProcessor scripts.txt dev\n");
+        usage.append("   ShellScriptListProcessor scripts.txt UAT\n");
+        usage.append("   ShellScriptListProcessor scripts.txt sit  " + LineFilter.PLAIN_FILTER_PREFIX + "jsp\n");
+        usage.append("   ShellScriptListProcessor scripts.txt PROD " + LineFilter.PLAIN_FILTER_PREFIX_INVERTED + "admin\n");
+        usage.append("   ShellScriptListProcessor scripts.txt sit  " + LineFilter.REGEX_FILTER_PREFIX + "a.+[\\d]{3}\n");
+        usage.append("   ShellScriptListProcessor scripts.txt PROD " + LineFilter.REGEX_FILTER_PREFIX_INVERTED + "A.+Servlet.*\n");
+
+        usage.append("   ShellScriptListProcessor scripts.txt qa   "
+                + LineFilter.LINE_NUMBER_SENTINAL
+                + "37"
+                + LineFilter.LINE_NUMBER_SENTINAL
+                + "\n");
+
+        usage.append("   ShellScriptListProcessor scripts.txt uat  "
+                + LineFilter.LINE_NUMBER_SENTINAL
+                + "39"
+                + LineFilter.LINE_NUMBER_SENTINAL
+                + "47"
+                + LineFilter.LINE_NUMBER_SENTINAL
+                + "\n");
 
         String usageMsg    =   String.format("%s\n\n%s", errMsg, usage.toString());
 
@@ -311,7 +393,7 @@ public class ShellScriptListProcessor {
         return false;
     }
 
-    protected static String valueToBeSelected(final int lineNumber, final String line, final String tag) {
+    protected static String valueToBeSelected(final String line, final String tag) {
         if(null == line)        return null;
 
         if(null == tag)         return null;
