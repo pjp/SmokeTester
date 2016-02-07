@@ -42,14 +42,8 @@ public class ShellScriptListProcessor {
 
         if(args.length < 2) {
             exitStatus      = 1;
-            String errMsg   = "Need a file name to read as input and an environment selector tag!";
 
-            System.err.println(errMsg);
-            LOGGER.warn("main: " + errMsg);
-
-            LOGGER.info(String.format("main: exiting with [%d]", exitStatus));
-
-            System.exit(exitStatus);
+            showUsage(exitStatus, "Need a file name to read as input and an environment selector tag!");
         }
 
         Path path       = Paths.get(args[0]);
@@ -63,15 +57,9 @@ public class ShellScriptListProcessor {
 
         if(null == stEnv || stEnv.trim().length() < 1) {
             exitStatus      = 2;
-            String errMsg   = "No environment selector tag defined!";
 
-            System.err.println(errMsg);
+            showUsage(exitStatus, "No environment selector tag defined!") ;
 
-            LOGGER.warn("main: " + errMsg);
-
-            LOGGER.info(String.format("main: exiting with [%d]", exitStatus));
-
-            System.exit(exitStatus);
         }
 
         Set<SmokeTestStrategy> shellScripts = new CopyOnWriteArraySet<>();
@@ -185,7 +173,42 @@ public class ShellScriptListProcessor {
 
         System.out.println(summary);
 
-        System.out.printf("EXIT: %d\n", exitStatus);
+        doExit(exitStatus);
+    }
+
+    private static void showUsage(final int exitStatus, final String errMsg) {
+        StringBuilder usage = new StringBuilder();
+
+        usage.append("Usage for ShellScriptListProcessor\n");
+        usage.append("\n");
+        usage.append("ShellScriptListProcessor config env {filter}\n");
+        usage.append("   config = a file containing commands to execute.\n");
+        usage.append("   env    = a tag to select specific lines from the config to execute.\n");
+        usage.append("   filter = optional pattern to (possibly) reduce the lines selected for execution.\n");
+        usage.append("\n");
+        usage.append("Notes:\n");
+        usage.append("   filter is of the format (1st characters denote the type of filter):-\n");
+        usage.append("      " + LineFilter.REGEX_FILTER_PREFIX + "match this regex\n");
+        usage.append("      " + LineFilter.REGEX_FILTER_PREFIX_INVERTED + "dont match this regex\n");
+        usage.append("      " + LineFilter.PLAIN_FILTER_PREFIX + "contains this text\n");
+        usage.append("      " + LineFilter.PLAIN_FILTER_PREFIX_INVERTED + "dont contain this text\n");
+        usage.append("      " + LineFilter.LINE_NUMBER_SENTINAL + "match this line number" + LineFilter.LINE_NUMBER_SENTINAL + "\n");
+
+        String usageMsg    =   String.format("%s\n\n%s", errMsg, usage.toString());
+
+        System.err.println(usageMsg);
+
+        LOGGER.warn("showUsage: " + errMsg);
+
+        doExit(exitStatus);
+    }
+
+    private static void doExit(final int exitStatus) {
+        String exitMsg = String.format("EXIT: %d\n", exitStatus);
+
+        LOGGER.info(exitMsg);
+
+        System.out.println(exitMsg);
 
         System.exit(exitStatus);
     }
@@ -317,7 +340,7 @@ public class ShellScriptListProcessor {
         public static final String REGEX_FILTER_PREFIX_INVERTED =   "=!";
         public static final String PLAIN_FILTER_PREFIX          =   "~=";
         public static final String PLAIN_FILTER_PREFIX_INVERTED =   "~!";
-        public static final String LINE_NUMBER_PREFIX           =   "#";
+        public static final String LINE_NUMBER_SENTINAL         =   "#";
 
         Pattern regex            = null;
         String rawFilterText     = null;
@@ -342,9 +365,9 @@ public class ShellScriptListProcessor {
                     matched = plainFilterText.contains(
                             String.format(
                                     "%s%d%s",
-                                    LINE_NUMBER_PREFIX,
+                                    LINE_NUMBER_SENTINAL,
                                     lineNumber,
-                                    LINE_NUMBER_PREFIX));
+                                    LINE_NUMBER_SENTINAL));
                 } else {
                     matched = text.contains(plainFilterText);
                 }
@@ -364,7 +387,7 @@ public class ShellScriptListProcessor {
 
             rawFilterText = filterText;
 
-            if(filterText.startsWith(LINE_NUMBER_PREFIX)) {
+            if(filterText.startsWith(LINE_NUMBER_SENTINAL)) {
                 plainFilterText = filterText;
                 lineNumberMatch = true;
 

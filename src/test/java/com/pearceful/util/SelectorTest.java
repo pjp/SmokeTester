@@ -295,8 +295,8 @@ public class SelectorTest extends TestCase {
         cmdLine = "One=two";
         rawFilterText    =
                 String.format("%s0%s",
-                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX,
-                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX);
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_SENTINAL,
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_SENTINAL);
         clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
         assertTrue(clf.isMatch(lineNumber, cmdLine));
         assertFalse(clf.isMatch(1, cmdLine));
@@ -305,10 +305,10 @@ public class SelectorTest extends TestCase {
         cmdLine = "One=two";
         rawFilterText    =
                 String.format("%s0%s2%s3%s",
-                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX,
-                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX,
-                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX,
-                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_PREFIX);
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_SENTINAL,
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_SENTINAL,
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_SENTINAL,
+                        ShellScriptListProcessor.LineFilter.LINE_NUMBER_SENTINAL);
         clf = new ShellScriptListProcessor.LineFilter(rawFilterText);
         assertTrue(clf.isMatch(lineNumber, cmdLine));
         assertFalse(clf.isMatch(1, cmdLine));
