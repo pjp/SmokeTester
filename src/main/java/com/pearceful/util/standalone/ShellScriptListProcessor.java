@@ -21,8 +21,8 @@ import java.util.regex.Pattern;
  * Read a file that contains commands or shell scripts (one per line) to execute
  * in parallel.
  *
- * Example file is scripts-dos.txt which contains for information about how
- * to configure what to run.
+ * Example file is scripts-xxx.txt which contains for information about how
+ * to configure and what to run.
  *
  */
 public class ShellScriptListProcessor {
@@ -40,9 +40,9 @@ public class ShellScriptListProcessor {
     public static final String ENV_VARIABLE_OS_SUFFIX       = "OS";
     public static final String ENV_VARIABLE_LINE_SUFFIX     = "LINE";
 
-    public static final String TIMEOUT_SECONDS  = "TIMEOUT_SECONDS";
-    public static final String THREAD_POOL_SIZE = "THREAD_POOL_SIZE";
-    public static final int INT_VALUE_NOT_SET   = -1;
+    public static final String TIMEOUT_SECONDS      = "TIMEOUT_SECONDS";
+    public static final String THREAD_POOL_SIZE     = "THREAD_POOL_SIZE";
+    public static final int    INT_VALUE_NOT_SET    = -1;
 
     private static final Logger LOGGER                  = Logger.getLogger(ShellScriptListProcessor.class);
     private static String envVariableNamePrefix         = ENV_VARIABLE_NAME_PREFIX;
@@ -57,7 +57,7 @@ public class ShellScriptListProcessor {
         if(args.length < 2) {
             exitStatus      = 1;
 
-            showUsage(exitStatus, "Need a file name to read as input and an environment selector tag!");
+            showUsage(exitStatus, "Need a file name to read as input and an selector tag!");
         }
 
         Path path       = Paths.get(args[0]);
@@ -320,18 +320,21 @@ public class ShellScriptListProcessor {
 
         usage.append("Usage for ShellScriptListProcessor\n");
         usage.append("\n");
-        usage.append("ShellScriptListProcessor config env {filter}\n");
+        usage.append("ShellScriptListProcessor config tag {filter}\n");
         usage.append("   config = a file containing commands to execute.\n");
-        usage.append("   env    = a tag to select specific lines from the config to execute.\n");
-        usage.append("   filter = optional pattern to (possibly) reduce the lines selected for execution.\n");
+        usage.append("   tag    = a tag (case insensitive) to select specific lines from the config file to execute.\n");
+        usage.append("   filter = optional pattern to (possibly) reduce the cmd lines selected for execution.\n");
         usage.append("\n");
         usage.append("Notes:\n");
-        usage.append("   filter is of the format (1st characters denote the type of filter):-\n");
-        usage.append("      " + LineFilter.REGEX_FILTER_PREFIX + "match this regex\n");
-        usage.append("      " + LineFilter.REGEX_FILTER_PREFIX_INVERTED + "dont match this regex\n");
-        usage.append("      " + LineFilter.PLAIN_FILTER_PREFIX + "contains this text\n");
-        usage.append("      " + LineFilter.PLAIN_FILTER_PREFIX_INVERTED + "dont contain this text\n");
-        usage.append("      " + LineFilter.LINE_NUMBER_SENTINAL + "match this line number" + LineFilter.LINE_NUMBER_SENTINAL + "\n");
+        usage.append("   the filter is of the format (1st characters denotes the type of filter):-\n");
+        usage.append("      " + LineFilter.REGEX_FILTER_PREFIX + "cmd line contains this regex\n");
+        usage.append("      " + LineFilter.REGEX_FILTER_PREFIX_INVERTED + "cmd line does NOT contain this regex\n");
+        usage.append("      " + LineFilter.PLAIN_FILTER_PREFIX + "cmd line contains this text\n");
+        usage.append("      " + LineFilter.PLAIN_FILTER_PREFIX_INVERTED + "cmd line does NOT contain this text\n");
+        usage.append("      " + LineFilter.LINE_NUMBER_SENTINAL + "match this(these) line number(s)" + LineFilter.LINE_NUMBER_SENTINAL + "\n");
+        usage.append("\n");
+        usage.append("   the filters are only applied if the line has ALREADY been selected by matching the tag.\n");
+        usage.append("   the line number filter MUST end with a sentinal " +  LineFilter.LINE_NUMBER_SENTINAL + ".\n");
         usage.append("\n");
         usage.append("Examples:\n");
         usage.append("   ShellScriptListProcessor scripts.txt dev\n");
@@ -339,7 +342,7 @@ public class ShellScriptListProcessor {
         usage.append("   ShellScriptListProcessor scripts.txt sit  " + LineFilter.PLAIN_FILTER_PREFIX + "jsp\n");
         usage.append("   ShellScriptListProcessor scripts.txt PROD " + LineFilter.PLAIN_FILTER_PREFIX_INVERTED + "admin\n");
         usage.append("   ShellScriptListProcessor scripts.txt sit  " + LineFilter.REGEX_FILTER_PREFIX + "a.+[\\d]{3}\n");
-        usage.append("   ShellScriptListProcessor scripts.txt PROD " + LineFilter.REGEX_FILTER_PREFIX_INVERTED + "A.+Servlet.*\n");
+        usage.append("   ShellScriptListProcessor scripts.txt QA " + LineFilter.REGEX_FILTER_PREFIX_INVERTED + "A.+Servlet.*\n");
 
         usage.append("   ShellScriptListProcessor scripts.txt qa   "
                 + LineFilter.LINE_NUMBER_SENTINAL
