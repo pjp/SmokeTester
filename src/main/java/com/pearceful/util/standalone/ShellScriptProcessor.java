@@ -152,7 +152,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     protected void setEnvVariables(Map<String, String> env, boolean runningInWindows, String osName) {
         ///////////////////////////////////////////////
         // Add to the environment our bespoke variables
-        String key = ShellScriptListProcessor.buildEnvVariableName(ShellScriptListProcessor.ENV_VARIABLE_ENV_SUFFIX);
+        String key = ShellScriptListProcessor.buildEnvVariableName(ShellScriptListProcessor.ENV_VARIABLE_TAG_SUFFIX);
 
         String existingValue = env.putIfAbsent(key, tag);
 

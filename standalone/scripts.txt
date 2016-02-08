@@ -1,0 +1,130 @@
+##############################################################
+# ShellScriptListProcessor configuration file
+#
+# The format of this file is :-
+#
+#    Lines starting with a '#' may be a comment, or a line to be evaluated as
+#    either a environment value value to be set (st.value) or whitespace
+#    followed by a command line to execute (to end of line)
+#
+#    To be safe, for comments use '# ' or '##' as the line prefix.
+#
+#    Do note that the tag descriptors are case insensitive in regard to matching
+#    against the environment tag.
+#
+##############################################################
+# Global settings
+#
+# '#@' prefix
+#
+# TIMEOUT_SECONDS - How many seconds that the entire set of commands can take before
+#                   the framework will terminate any ones still running.
+# THREAD_POOL     - How many commands can be run in parallel.
+#
+#@TIMEOUT_SECONDS@60
+#@THREAD_POOL_SIZE@2
+###############
+# There are three environmental variables set automatically :-
+#
+# ST_TAG    The tag selector as passed on the command line.
+# ST_LINE   The specific line number from this file when a command is executing.
+# ST_OS     The operating system currently running on (windows|unix), this also
+#           determines the shell used to run the commands.
+#
+#           cmd /c for windows
+#           bash -c for unix
+#
+#
+# If any of the environmental variable names clash with existing ones, they will NOT be set
+# but then the prefix (ST_) can be changed by setting a system property (-Dst.env.name.prefix=)
+#
+#
+# '#=' prefix
+#
+# There is a 4th environmental variable that can be set (ST_VALUE) based on the relevant
+# matching tag selector from the command line so it can be used further down in this file.
+#
+# E.g. if the tag selector specified was 'UAT' then the contents of the
+# ST_VALUE environmental variable would contain 'Hello from UAT'.
+#
+#=DEV=Hello from DEV
+#=SIT=Hello from SIT
+#=UAT=Hello from UAT
+#=QA=sHello from QA
+#=PROD=Hello from PROD
+#
+##############################################################
+# Command to be executed matching the selector tag passed on the command line
+#
+# '#:' prefix
+#
+# A tag descriptor is one or more strings prefixed with a '#' and then
+# SURROUNDED with ':' that will be matched against the value specified
+# against the environment tag (case insensitive).
+#
+# Notes:
+#    Do NOT leave whitespace between the first '#' and the ':'
+#    Do NOT leave whitespace inside the ':'
+#
+#
+# Sample tag descriptors:-
+#
+#   :+:         select regardless of value of selector tag
+#   :-:         deselect regardless of value of the selector tag (disabled)
+#   :sss:       select only if exact match of sss to value of the selector tag
+#   :+sss:      same as above.
+#   :aaa:bbb:   select only if exact match of aaa or bbb to value of the selector tag
+#   :-sss:      deselect only if exact match of sss to the value of the selector tag, else selected
+#   :-aaa:-bbb: deselect if aaa or bbb are exact matches to the value of the selector tag, else selected
+#   :-aaa:bbb:  deselect only if exact match of -aaa to the value of the selector tag, else selected (bbb ignored)
+#
+# Example lines :-
+#
+#:+:             echo "One"
+#:-:             echo "Two"
+#:DEV:           echo "Three"
+#:-PROD:         echo "Four"
+#:DEV:UAT:       echo "Five"
+#:-SIT:-UAT:     echo "Six"
+#:qa:            echo "Seven"
+#
+# Given that the value of the tag=DEV,
+#
+#   We will get the outputs One Three Four Five Six
+#
+#
+# Given that the value of the selector tag 'SIT',
+#
+#   We will get the outputs One Four
+#
+#
+# Given that the value of the selector tag 'UAT',
+#
+#   We will get the outputs One Four Five
+#
+#
+# Given that the value of the selector tag 'PROD',
+#
+#   We will get the outputs One Six
+#
+#
+# Given that the value of the selector tag 'QA',
+#
+#   We will get the outputs One Four Six
+#
+#
+#####################################
+# These command will run in ALL OS environments but only one will expand the variables
+# depending on the OS this is been run on.
+#
+#:+: echo OS is [%ST_OS%] with selector tag [%ST_TAG%] and value [%ST_VALUE%], from line is [%ST_LINE%]
+#:+: echo OS is [$ST_OS] with selector tag [$ST_TAG] and value [$ST_VALUE], from line is [$ST_LINE]
+#
+###############################################
+# This command should only run with the selector tag 'DEV'
+#:DEV: hostname
+#
+#########################################################
+# This command should run with any selector tag EXCEPT 'PROD'
+# This should cause a failure as it shouldn't exist.
+#:-PROD: xyz

@@ -35,7 +35,7 @@ public class ShellScriptListProcessor {
 
     public static final String ENV_VARIABLE_NAME_PREFIX_KEY = "st.env.name.prefix";
     public static final String ENV_VARIABLE_NAME_PREFIX     = "ST_";
-    public static final String ENV_VARIABLE_ENV_SUFFIX      = "ENV";
+    public static final String ENV_VARIABLE_TAG_SUFFIX      = "TAG";
     public static final String ENV_VARIABLE_VALUE_SUFFIX    = "VALUE";
     public static final String ENV_VARIABLE_OS_SUFFIX       = "OS";
     public static final String ENV_VARIABLE_LINE_SUFFIX     = "LINE";
@@ -113,7 +113,7 @@ public class ShellScriptListProcessor {
 
         LOGGER.info(
                 String.format("main: Enviromental variable names available: [%s], [%s], [%s], [%s]",
-                        buildEnvVariableName(ENV_VARIABLE_ENV_SUFFIX),
+                        buildEnvVariableName(ENV_VARIABLE_TAG_SUFFIX),
                         buildEnvVariableName(ENV_VARIABLE_VALUE_SUFFIX),
                         buildEnvVariableName(ENV_VARIABLE_OS_SUFFIX),
                         buildEnvVariableName(ENV_VARIABLE_LINE_SUFFIX)));
@@ -325,10 +325,10 @@ public class ShellScriptListProcessor {
 
         usage.append("Usage for ShellScriptListProcessor\n");
         usage.append("\n");
-        usage.append("ShellScriptListProcessor config tag {filter}\n");
-        usage.append("   config = a file containing commands to execute.\n");
-        usage.append("   tag    = a tag (case insensitive) to select specific lines from the config file to execute.\n");
-        usage.append("   filter = optional pattern to (possibly) reduce the cmd lines selected for execution.\n");
+        usage.append("ShellScriptListProcessor config selector_tag {filter}\n");
+        usage.append("   config       = a file containing commands to execute.\n");
+        usage.append("   selector_tag = a tag (case insensitive) to select specific lines from the config file to execute.\n");
+        usage.append("   filter       = optional pattern to (possibly) reduce the cmd lines selected for execution.\n");
         usage.append("\n");
         usage.append("Notes:\n");
         usage.append("   the filter is of the format (1st characters denotes the type of filter):-\n");
@@ -338,7 +338,7 @@ public class ShellScriptListProcessor {
         usage.append("      " + LineFilter.PLAIN_FILTER_PREFIX_INVERTED + "cmd line does NOT contain this text\n");
         usage.append("      " + LineFilter.LINE_NUMBER_SENTINAL + "match this(these) line number(s)" + LineFilter.LINE_NUMBER_SENTINAL + "\n");
         usage.append("\n");
-        usage.append("   the filters are only applied if the line has ALREADY been selected by matching the tag.\n");
+        usage.append("   the filters are only applied if the line has ALREADY been selected by matching the selector tag.\n");
         usage.append("   the line number filter MUST end with a sentinal " +  LineFilter.LINE_NUMBER_SENTINAL + ".\n");
         usage.append("\n");
         usage.append("Examples:\n");
