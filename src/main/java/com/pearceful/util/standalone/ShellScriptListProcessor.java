@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
  *
  */
 public class ShellScriptListProcessor {
+    public static final String VERSION              = "1.0";
     public static final String COMMENT_LEADER       = "#";
     public static final String TAG_SENTINAL         = ":";
     public static final String SELECTED_PREFIX      = "+";
@@ -82,6 +83,7 @@ public class ShellScriptListProcessor {
 
         /////////////////////////////////////////
         // Process each non comment or blank line
+        System.out.println("VERS: " + VERSION);
         System.out.println("COMM: ################################################");
 
         LOGGER.debug(
@@ -323,7 +325,7 @@ public class ShellScriptListProcessor {
     private static void showUsage(final int exitStatus, final String errMsg) {
         StringBuilder usage = new StringBuilder();
 
-        usage.append("Usage for ShellScriptListProcessor\n");
+        usage.append("Usage for ShellScriptListProcessor - v" + VERSION + "\n");
         usage.append("\n");
         usage.append("ShellScriptListProcessor config selector_tag {filter}\n");
         usage.append("   config       = a file containing commands to execute.\n");
