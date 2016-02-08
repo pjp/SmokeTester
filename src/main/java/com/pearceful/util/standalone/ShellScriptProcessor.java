@@ -1,24 +1,32 @@
-package com.pearceful.util;
+package com.pearceful.util.standalone;
 
+import com.pearceful.util.BaseSmokeTestStrategy;
+import com.pearceful.util.SmokeTestException;
+import com.pearceful.util.SmokeTestResult;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Created by ppearce on 2016-02-04.
+ * Created by ppearce on 2016-01-04.
+ *
+ * An implementation of the SmokeTestStrategy that can be run
+ * in parallel with other strategies.
+ *
+ * It's goal is to execute a command line and capture it's output
+ * and exit status. If the exit status is !=0, then the strategy
+ * will denote a failure of the test.
+ *
  */
 public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     private SmokeTestResult.STATE state = SmokeTestResult.STATE.USER_FAIL;
     private String cmdLine              = "";
-    private String envName;
+    private String tag;
     private String envValue;
     private long elapsedNs              = 0 ;
     private String msg                  = "";
@@ -33,11 +41,11 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     public ShellScriptProcessor(
             final int lineNumber,
             final String cmdLine,
-            final String envName,
+            final String tag,
             final String envValue) {
         this.cmdLine    = cmdLine.trim();
         id              = ""+ lineNumber;
-        this.envName    = envName;
+        this.tag        = tag;
         this.envValue   = envValue;
     }
 
@@ -45,6 +53,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     public void execute() throws SmokeTestException {
         long startNs    = System.nanoTime();
         int exitValue   = -1;
+        boolean runningInWindows    =   false;
 
         ///////////////////////////
         // Process the command line
@@ -58,6 +67,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
 
             if (osName.indexOf("windows") != -1) {
                 pb = new ProcessBuilder(WINDOWS_SHELL, WINDOWS_SHELL_PARAM, cmdLine);
+                runningInWindows    = true;
             } else {
                 pb = new ProcessBuilder(UNIX_SHELL, UNIX_SHELL_PARAM, cmdLine);
             }
@@ -66,15 +76,9 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
             // Get the current environment
             Map<String, String> env = pb.environment();
 
-            /////////////////////////////////////////////////////////
-            // Add to the environment is needed our bespoke variables
-            if (null != envName) {
-                env.put(ShellScriptListProcessor.TAG_ENV_NAME, envName);
-            }
-
-            if (null != envValue) {
-                env.put(ShellScriptListProcessor.TAG_ENV_VALUE, envValue);
-            }
+            //////////////////////////////////////////
+            // Set any bespoke environmental variables
+            setEnvVariables(env, runningInWindows, osName);
 
             ////////////////////////////////////////////////////////////////
             // Actually execute the command line and wait for it to complete
@@ -86,6 +90,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
             msg = gatherOutputs(proc, elapsedNs);
 
             if(exitValue == 0) {
+                // Strategy test PASSED
                 state = SmokeTestResult.STATE.USER_PASS;
             }
         } catch (IOException e) {
@@ -107,15 +112,25 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         }
     }
 
-    @Override
+   @Override
     public SmokeTestResult validate() {
-        SmokeTestResult result  = new SmokeTestResult(id, state, elapsedNs, msg);
+       // Simply create a Strategy result to indicate PASS or FAIL, the actual
+       // validation was done in the execute method
+       SmokeTestResult result  = new SmokeTestResult(id, state, elapsedNs, msg);
 
-        LOGGER.trace(String.format("validate: result [%s] line [%s %s]", result, id, cmdLine));
+       LOGGER.trace(String.format("validate: result [%s] line [%s %s]", result, id, cmdLine));
 
-        return result;
+       return result;
     }
 
+    /**
+     * Extract the outputs of the process.
+     *
+     * @param proc The process
+     * @param elapsedNs how long the process executed for
+     *
+     * @return A String representation of the proc's output
+     */
     protected String gatherOutputs(final Process proc, final long elapsedNs) {
         BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         BufferedReader stderr = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
@@ -127,6 +142,68 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
                 stderr.lines().collect(Collectors.joining("\n")));
     }
 
+    /**
+     * Set smokeTester environmental varuiablesd if they don't already exist
+     *
+     * @param env The map of current environmental variables (will be added to)
+     * @param runningInWindows flag to say what OS we are running in
+     * @param osName The name of the current OS
+     */
+    protected void setEnvVariables(Map<String, String> env, boolean runningInWindows, String osName) {
+        ///////////////////////////////////////////////
+        // Add to the environment our bespoke variables
+        String key = ShellScriptListProcessor.buildEnvVariableName(ShellScriptListProcessor.ENV_VARIABLE_ENV_SUFFIX);
+
+        String existingValue = env.putIfAbsent(key, tag);
+
+        if(null != existingValue) {
+            LOGGER.warn(String.format("setEnvVariables: Env. variable [%s] already exists with value [%s]", key, existingValue));
+        }
+
+        /////////////////////////////
+        if (null != envValue) {
+            key = ShellScriptListProcessor.buildEnvVariableName(ShellScriptListProcessor.ENV_VARIABLE_VALUE_SUFFIX);
+
+            existingValue = env.putIfAbsent(key, envValue);
+
+            if(null != existingValue) {
+                LOGGER.warn(String.format("setEnvVariables: Env. variable [%s] already exists with value [%s]", key, existingValue));
+            }
+        }
+
+        /////////////////////////////
+        key = ShellScriptListProcessor.buildEnvVariableName(ShellScriptListProcessor.ENV_VARIABLE_OS_SUFFIX);
+
+        if(runningInWindows) {
+            existingValue = env.putIfAbsent(key, "windows");
+        } else {
+            existingValue = env.putIfAbsent(key, "unix");
+        }
+
+        if(null != existingValue) {
+            LOGGER.warn(String.format("setEnvVariables: Env. variable [%s] already exists with value [%s]", key, existingValue));
+        }
+
+        /////////////////////////////
+        key = ShellScriptListProcessor.buildEnvVariableName(ShellScriptListProcessor.ENV_VARIABLE_LINE_SUFFIX);
+
+        existingValue = env.putIfAbsent(key, id);
+
+        if(null != existingValue) {
+            LOGGER.warn(String.format("setEnvVariables: Env. variable [%s] already exists with value [%s]", key, existingValue));
+        }
+    }
+
+    /**
+     * Extract the current process details.
+     *
+     * @param exitCode The proc's exit code
+     * @param id The id of this Strategy (line number)
+     * @param cmdLine The command line that was executed.
+     * @param elapsedNs how long the process executed for
+     *
+     * @return A String representation of the process details
+     */
     protected String cmdDetails(final int exitCode, final String id, final String cmdLine, final long elapsedNs) {
         return String.format(
                 "%s: line [%s], cmd [%s], elapsedNs [%d]",

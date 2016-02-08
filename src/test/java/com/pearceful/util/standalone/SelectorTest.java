@@ -1,5 +1,6 @@
-package com.pearceful.util;
+package com.pearceful.util.standalone;
 
+import com.pearceful.util.standalone.ShellScriptListProcessor;
 import junit.framework.TestCase;
 
 import static java.lang.Thread.sleep;

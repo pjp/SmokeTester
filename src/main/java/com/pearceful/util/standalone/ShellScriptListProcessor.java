@@ -1,5 +1,9 @@
-package com.pearceful.util;
+package com.pearceful.util.standalone;
 
+import com.pearceful.util.SmokeTestContext;
+import com.pearceful.util.SmokeTestException;
+import com.pearceful.util.SmokeTestResult;
+import com.pearceful.util.SmokeTestStrategy;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -29,14 +33,19 @@ public class ShellScriptListProcessor {
     public static final String VALUE_SENTINAL       = "=";
     public static final String GLOBAL_SENTINAL      = "@";
 
-    public static final String TAG_ENV_NAME     = "ST_ENV";
-    public static final String TAG_ENV_VALUE    = "ST_VALUE";
+    public static final String ENV_VARIABLE_NAME_PREFIX_KEY = "st.env.name.prefix";
+    public static final String ENV_VARIABLE_NAME_PREFIX     = "ST_";
+    public static final String ENV_VARIABLE_ENV_SUFFIX      = "ENV";
+    public static final String ENV_VARIABLE_VALUE_SUFFIX    = "VALUE";
+    public static final String ENV_VARIABLE_OS_SUFFIX       = "OS";
+    public static final String ENV_VARIABLE_LINE_SUFFIX     = "LINE";
 
     public static final String TIMEOUT_SECONDS  = "TIMEOUT_SECONDS";
     public static final String THREAD_POOL_SIZE = "THREAD_POOL_SIZE";
     public static final int INT_VALUE_NOT_SET   = -1;
 
     private static final Logger LOGGER                  = Logger.getLogger(ShellScriptListProcessor.class);
+    private static String envVariableNamePrefix         = ENV_VARIABLE_NAME_PREFIX;
 
     public static void main(String[] args) {
         int exitStatus      = 0;
@@ -52,7 +61,7 @@ public class ShellScriptListProcessor {
         }
 
         Path path       = Paths.get(args[0]);
-        String stEnv    = args[1];
+        String stTag    = args[1];
 
         if(args.length > 2) {
             filter  = args[2];
@@ -60,10 +69,10 @@ public class ShellScriptListProcessor {
             lineFilter = new LineFilter(filter);
         }
 
-        if(null == stEnv || stEnv.trim().length() < 1) {
+        if(null == stTag || stTag.trim().length() < 1) {
             exitStatus      = 2;
 
-            showUsage(exitStatus, "No environment selector tag defined!") ;
+            showUsage(exitStatus, "No selector tag defined!") ;
 
         }
 
@@ -74,9 +83,9 @@ public class ShellScriptListProcessor {
         /////////////////////////////////////////
         // Process each non comment or blank line
         LOGGER.debug(
-                String.format("main: input [%s], env tag [%s], filter [%s]",
+                String.format("main: input [%s], tag [%s], filter [%s]",
                         path.getFileName(),
-                        stEnv,
+                        stTag,
                         (null != lineFilter ? filter : "{NONE-SPECIFIED}")));
 
         int failedCount = 0;
@@ -84,6 +93,28 @@ public class ShellScriptListProcessor {
         int globalValue = -1;
 
         long start      = System.nanoTime();
+
+        // Determine if the env. variable name prefix has been overridden
+        LOGGER.debug(
+                String.format(
+                        "main: Checking for overriding SmokeTester env. name prefix [%s] system property",
+                        ENV_VARIABLE_NAME_PREFIX_KEY));
+
+        String propVal = System.getProperty(ENV_VARIABLE_NAME_PREFIX_KEY);
+
+        if(null != propVal) {
+            envVariableNamePrefix = propVal;
+            LOGGER.debug("main: Overriding SmokeTester env. variable name prefix with [" + propVal + "]");
+        } else {
+            LOGGER.debug("main: Keeping SmokeTester env. variable name prefix [" + ENV_VARIABLE_NAME_PREFIX + "]");
+        }
+
+        LOGGER.info(
+                String.format("main: Enviromental variable names available: [%s], [%s], [%s], [%s]",
+                        buildEnvVariableName(ENV_VARIABLE_ENV_SUFFIX),
+                        buildEnvVariableName(ENV_VARIABLE_VALUE_SUFFIX),
+                        buildEnvVariableName(ENV_VARIABLE_OS_SUFFIX),
+                        buildEnvVariableName(ENV_VARIABLE_LINE_SUFFIX)));
 
         try{
             List<String> lines  = Files.readAllLines(path);
@@ -110,14 +141,14 @@ public class ShellScriptListProcessor {
 
                 ////////////////////////////////////////////////////////////////////
                 // Determine if a matching variable for the environment has been set
-                String possibleEnvValueToBeSet  = valueToBeSelected(line, stEnv);
+                String possibleEnvValueToBeSet  = valueToBeSelected(line, stTag);
                 if(null != possibleEnvValueToBeSet) {
                     envValueToBeSet = possibleEnvValueToBeSet;
                 }
 
                 ////////////////////////////////////////////
                 // Start the selection process for this line
-                boolean selected        = lineToBeSelected(lineNumber, line, stEnv);
+                boolean selected        = lineToBeSelected(lineNumber, line, stTag);
                 boolean passedFilter    = false;
 
                 if(selected) {
@@ -136,7 +167,8 @@ public class ShellScriptListProcessor {
                     /////////////////////////////////////////////////////////////
                     // Finally check if the line passed all checks to be executed
                     if(passedFilter) {
-                        shellScripts.add(new ShellScriptProcessor(lineNumber, cmdLine, stEnv, envValueToBeSet));
+                        shellScripts.add(
+                                new ShellScriptProcessor(lineNumber, cmdLine, stTag, envValueToBeSet));
                     }
                 }
 
@@ -454,7 +486,7 @@ public class ShellScriptListProcessor {
 
             if (st.countTokens() < 2) return null;
 
-            // Extract the environment tag and it's value
+            // Extract the tag and it's value
             String stEnv = st.nextToken();
             String value = line.substring(stEnv.length() + 1);
 
@@ -462,6 +494,15 @@ public class ShellScriptListProcessor {
         }
 
         return null;
+    }
+
+    /**
+     *
+     * @param suffix
+     * @return
+     */
+    protected static String buildEnvVariableName(final String suffix) {
+        return envVariableNamePrefix + suffix;
     }
 
     static class LineFilter {

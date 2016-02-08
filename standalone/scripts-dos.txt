@@ -14,7 +14,8 @@
 #@TIMEOUT_SECONDS@60
 #@THREAD_POOL_SIZE@2
 ###############
-# Specific environment values if matching the environment passed on the command line
+# This will set the ST_VALUE environmental variable to the relevant matching tag from
+# the command line
 #
 #=DEV=Hello from DEV
 #=SIT=Hello from SIT
@@ -85,8 +86,8 @@
 # a shell has to be specified. If the command is a shell script, then the
 # environmental variables will be available as normal to it as usual.
 #
-# This command should run in ALL environments
-#:+: echo I'm in [%ST_ENV%] with value [%ST_VALUE%]
+# This command should run in ALL environments and show the before variablesd available
+#:+: echo I'm in [%ST_ENV%] with value [%ST_VALUE%], OS is [%ST_OS%] and this line is [%ST_LINE%]
 #
 #####################################
 # This command should only run in DEV
