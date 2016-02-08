@@ -17,5 +17,5 @@ See *SmokeTestContext.runSmokeTests* static method and the *SmokeTestContextTest
 
 ### Sample Implementation
 
-For a complete running sample implementation, see *ShellScriptListProcessor* class and the run.sh/run/cmd scripts
-in the standalone directory.
+For a complete running sample implementation, see *ShellScriptListProcessor* class and the run.sh/run.cmd scripts
+in the standalone package and directory.
