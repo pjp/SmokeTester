@@ -82,6 +82,8 @@ public class ShellScriptListProcessor {
 
         /////////////////////////////////////////
         // Process each non comment or blank line
+        System.out.println("COMM: ################################################");
+
         LOGGER.debug(
                 String.format("main: input [%s], tag [%s], filter [%s]",
                         path.getFileName(),
@@ -223,6 +225,7 @@ public class ShellScriptListProcessor {
             //////////////////////////
             // Display the top slowest
             int max = 5;
+            System.out.println("COMM: ################################################");
             System.out.println("SUMM: Top " + max + " Slowest (PASS) responses follow.");
 
             int count = 1;
@@ -239,6 +242,7 @@ public class ShellScriptListProcessor {
 
             ////////////////////////////
             // Display just the failures
+            System.out.println("COMM: ################################################");
             System.out.println("SUMM: All (FAIL) responses follow.");
 
             for(SmokeTestResult result : results) {
@@ -272,6 +276,7 @@ public class ShellScriptListProcessor {
 
         LOGGER.info(String.format("main: %s - exiting with [%d]\n", summary, exitStatus));
 
+        System.out.println("COMM: ################################################");
         System.out.println(summary);
 
         doExit(exitStatus);
@@ -371,6 +376,8 @@ public class ShellScriptListProcessor {
         String exitMsg = String.format("EXIT: %d\n", exitStatus);
 
         LOGGER.info(exitMsg);
+
+        System.out.println("COMM: ################################################");
 
         System.out.println(exitMsg);
 
