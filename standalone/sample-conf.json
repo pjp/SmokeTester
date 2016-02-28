@@ -1,6 +1,6 @@
 {
   "setup": {
-    "timeout-for-all-tests": 600,
+    "timeout-seconds-for-all-tests": 600,
     "thread-pool-size": 2,
     "set-system-variable": [
       {"name": "ST_TIMEOUT",           "internal-value": "TIMEOUT"},
