@@ -1,4 +1,4 @@
-package com.pearceful.util;
+package com.pearceful.util.standalone;
 
 import junit.framework.TestCase;
 
@@ -17,8 +17,8 @@ import java.util.Map;
  */
 public class InternalJsonParseTest extends TestCase{
     private ScriptEngine engine;
-    private String jsonFile     = "src/test/resources/misc.json";
-    private String badJsonFile  = "src/test/resources/malformed-misc.json";
+    private String jsonFile     = "src/test/resources/standalone/misc.json";
+    private String badJsonFile  = "src/test/resources/standalone/malformed-misc.json";
 
     @Override
     public void setUp() {
