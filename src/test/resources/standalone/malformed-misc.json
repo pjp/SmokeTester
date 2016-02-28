@@ -10,10 +10,10 @@
       "replication" : 0.06666666666666667,
       "index" : {
         "shards" : {
-          "min" : 10,
-          "max" : 60,
-          "avg" : 26.666666666666668
-        ,
+          "min": 10,
+          "max": 60,
+          "avg": 26.666666666666668
+        , // missing brace -deliberate !!!!!!
         "primaries" : {
           "min" : 5,
           "max" : 60,
