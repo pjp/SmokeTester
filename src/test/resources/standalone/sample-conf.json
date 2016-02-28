@@ -1,0 +1,55 @@
+{
+  "setup": {
+    "timeout-for-all-tests": 600,
+    "thread-pool-size": 2,
+    "set-system-variable": [
+      {"name": "ST_TIMEOUT",           "internal-value": "TIMEOUT"},
+      {"name": "ST_THREAD_POOL_SIZE",  "internal-value": "THREAD_POOL_SIZE"},
+      {"name": "ST_CMD_LINE",          "internal-value": "CMD_LINE"},
+      {"name": "ST_ID",  "internal-value": "ID"},
+      {"name": "ST_OS",  "internal-value": "OS"},
+      {"name": "ST_TAG", "internal-value-from-matching-tag": {
+        "DEV":  "DEV",
+        "SIT":  "SIT",
+        "UAT":  "UAT",
+        "PROD": "PROD"}
+      },
+      {
+        "name": "ST_VALUE1",
+        "inline-value-from-matching-tag": {
+          "DEV": "Hello from DEV",
+          "SIT": "Hello from SIT",
+          "UAT": "Hello from UAT",
+          "PROD": "Hello from PROD"
+        }
+      },
+      {
+        "name": "ST_VALUE2",
+        "inline-value-from-matching-tag": {
+          "DEV": "Bye from DEV",
+          "SIT": "Bye from SIT",
+          "UAT": "Bye from UAT",
+          "PROD": "Bye from PROD"
+        }
+      }
+    ]
+  },
+  "test": {
+    "id1": {
+      "run" : {"always": true},
+      "cmd":"echo OS is [$ST_OS] with selector tag [$ST_TAG] and value [$ST_VALUE1], from test id [$ST_ID]"
+    },
+    "id2": {
+      "run" : {"if-tag-matches": ["DEV"]},
+      "cmd":"hostname"
+    },
+    "id3": {
+      "run" : {"unless-tag-matches": ["PROD"]},
+      "cmd": "xyz $ST_VALUE2"
+    },
+    "id4": {
+      "run" : { "never" : true },
+      "cmd":""
+    }
+  }
+}
