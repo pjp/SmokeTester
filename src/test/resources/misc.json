@@ -1,0 +1,137 @@
+{
+  "timestamp" : 1456034646246,
+  "cluster_name" : "TEST-DEV",
+  "status" : "green",
+  "indices" : {
+    "count" : 3,
+    "shards" : {
+      "total" : 80,
+      "primaries" : 75,
+      "replication" : 0.06666666666666667,
+      "index" : {
+        "shards" : {
+          "min" : 10,
+          "max" : 60,
+          "avg" : 26.666666666666668
+        },
+        "primaries" : {
+          "min" : 5,
+          "max" : 60,
+          "avg" : 25.0
+        },
+        "replication" : {
+          "min" : 0.0,
+          "max" : 1.0,
+          "avg" : 0.3333333333333333
+        }
+      }
+    },
+    "docs" : {
+      "count" : 169940726,
+      "deleted" : 714511
+    },
+    "store" : {
+      "size_in_bytes" : 488145337408,
+      "throttle_time_in_millis" : 7081
+    },
+    "fielddata" : {
+      "memory_size_in_bytes" : 243730929160,
+      "evictions" : 0
+    },
+    "filter_cache" : {
+      "memory_size_in_bytes" : 309956480,
+      "evictions" : 0
+    },
+    "id_cache" : {
+      "memory_size_in_bytes" : 300176672
+    },
+    "completion" : {
+      "size_in_bytes" : 0
+    },
+    "segments" : {
+      "count" : 1500,
+      "memory_in_bytes" : 1769583484,
+      "index_writer_memory_in_bytes" : 0,
+      "index_writer_max_memory_in_bytes" : 5940908032,
+      "version_map_memory_in_bytes" : 0,
+      "fixed_bit_set_memory_in_bytes" : 0
+    },
+    "percolate" : {
+      "total" : 0,
+      "time_in_millis" : 0,
+      "current" : 0,
+      "memory_size_in_bytes" : -1,
+      "memory_size" : "-1b",
+      "queries" : 0
+    }
+  },
+  "nodes" : {
+    "count" : {
+      "total" : 6,
+      "master_only" : 0,
+      "data_only" : 0,
+      "master_data" : 5,
+      "client" : 1
+    },
+    "versions" : [ "1.7.2" ],
+    "os" : {
+      "available_processors" : 32,
+      "mem" : {
+        "total_in_bytes" : 506894479360
+      },
+      "cpu" : [ {
+        "vendor" : "Intel",
+        "model" : "Xeon",
+        "mhz" : 2700,
+        "total_cores" : 6,
+        "total_sockets" : 1,
+        "cores_per_socket" : 4,
+        "cache_size_in_bytes" : 20480,
+        "count" : 5
+      } ]
+    },
+    "process" : {
+      "cpu" : {
+        "percent" : 160
+      },
+      "open_file_descriptors" : {
+        "min" : 402,
+        "max" : 814,
+        "avg" : 734
+      }
+    },
+    "jvm" : {
+      "max_uptime_in_millis" : 384595836,
+      "versions" : [ {
+        "version" : "1.8.0_60",
+        "vm_name" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vm_version" : "25.60-b23",
+        "vm_vendor" : "Oracle Corporation",
+        "count" : 6
+      } ],
+      "mem" : {
+        "heap_used_in_bytes" : 317363523200,
+        "heap_max_in_bytes" : 417406648320
+      },
+      "threads" : 633
+    },
+    "fs" : {
+      "total_in_bytes" : 1585300111360,
+      "free_in_bytes" : 1087869124608,
+      "available_in_bytes" : 1007354769408,
+      "disk_reads" : 223216960,
+      "disk_writes" : 1630081239,
+      "disk_io_op" : 1853298199,
+      "disk_read_size_in_bytes" : 10789031973888,
+      "disk_write_size_in_bytes" : 6676812754944,
+      "disk_io_size_in_bytes" : 17465844728832
+    },
+    "plugins" : [ {
+      "name" : "Text-Attribute-Similarity-Plugin",
+      "version" : "NA",
+      "description" : "Used to provide the Text Attribute Similarity algorithm to Elastic Search.",
+      "jvm" : true,
+      "site" : false
+    } ]
+  }
+}
