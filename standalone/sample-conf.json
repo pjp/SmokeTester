@@ -3,11 +3,12 @@
     "timeout-seconds-for-all-tests": 600,
     "thread-pool-size": 2,
     "set-system-variable": [
-      {"name": "ST_TIMEOUT",           "internal-value": "TIMEOUT"},
-      {"name": "ST_THREAD_POOL_SIZE",  "internal-value": "THREAD_POOL_SIZE"},
-      {"name": "ST_CMD_LINE",          "internal-value": "CMD_LINE"},
-      {"name": "ST_ID",  "internal-value": "ID"},
-      {"name": "ST_OS",  "internal-value": "OS"},
+      {"name": "ST_VERSION",          "internal-value": "VERSION"},
+      {"name": "ST_CMD_LINE",         "internal-value": "CMD_LINE"},
+      {"name": "ST_TIMEOUT",          "internal-value": "TIMEOUT"},
+      {"name": "ST_THREAD_POOL_SIZE", "internal-value": "THREAD_POOL_SIZE"},
+      {"name": "ST_ID",               "internal-value": "ID"},
+      {"name": "ST_OS",               "internal-value": "OS"},
       {"name": "ST_TAG", "internal-value-from-matching-tag": {
         "DEV":  "DEV",
         "SIT":  "SIT",
