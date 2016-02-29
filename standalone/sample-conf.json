@@ -1,15 +1,15 @@
 {
   "setup": {
-    "timeout-seconds-for-all-tests": 600,
-    "thread-pool-size": 2,
-    "set-system-variable": [
-      {"name": "ST_VERSION",          "internal-value": "VERSION"},
-      {"name": "ST_CMD_LINE",         "internal-value": "CMD_LINE"},
-      {"name": "ST_TIMEOUT",          "internal-value": "TIMEOUT"},
-      {"name": "ST_THREAD_POOL_SIZE", "internal-value": "THREAD_POOL_SIZE"},
-      {"name": "ST_ID",               "internal-value": "ID"},
-      {"name": "ST_OS",               "internal-value": "OS"},
-      {"name": "ST_TAG", "internal-value-from-matching-tag": {
+    "timeout_seconds_for_all_tests": 600,
+    "thread_pool_size": 2,
+    "system_variables": [
+      {"name": "ST_VERSION",          "internal_value": "VERSION"},
+      {"name": "ST_CMD_LINE",         "internal_value": "CMD_LINE"},
+      {"name": "ST_TIMEOUT",          "internal_value": "TIMEOUT"},
+      {"name": "ST_THREAD_POOL_SIZE", "internal_value": "THREAD_POOL_SIZE"},
+      {"name": "ST_ID",               "internal_value": "ID"},
+      {"name": "ST_OS",               "internal_value": "OS"},
+      {"name": "ST_TAG", "internal_value_from_matching_tag": {
         "DEV":  "DEV",
         "SIT":  "SIT",
         "UAT":  "UAT",
@@ -17,7 +17,7 @@
       },
       {
         "name": "ST_VALUE1",
-        "inline-value-from-matching-tag": {
+        "inline_value_from_matching_tag": {
           "DEV": "Hello from DEV",
           "SIT": "Hello from SIT",
           "UAT": "Hello from UAT",
@@ -26,7 +26,7 @@
       },
       {
         "name": "ST_VALUE2",
-        "inline-value-from-matching-tag": {
+        "inline_value_from_matching_tag": {
           "DEV": "Bye from DEV",
           "SIT": "Bye from SIT",
           "UAT": "Bye from UAT",
@@ -41,11 +41,11 @@
       "cmd":"echo OS is [$ST_OS] with selector tag [$ST_TAG] and value [$ST_VALUE1], from test id [$ST_ID]"
     },
     "id2": {
-      "run" : {"if-tag-matches": ["DEV"]},
+      "run" : {"if_tag_matches": ["DEV"]},
       "cmd":"hostname"
     },
     "id3": {
-      "run" : {"unless-tag-matches": ["PROD"]},
+      "run" : {"unless_tag_matches": ["PROD"]},
       "cmd": "xyz $ST_VALUE2"
     },
     "id4": {
