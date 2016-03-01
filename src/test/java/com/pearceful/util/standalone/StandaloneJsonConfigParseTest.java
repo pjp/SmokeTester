@@ -31,6 +31,7 @@ public class StandaloneJsonConfigParseTest extends TestCase {
         assertEquals(600, config.setup.getTimeoutSecondsForAllTests());
         assertEquals(2,   config.setup.getThreadPoolSize());
         assertEquals(10,  config.setup.getSystemVariables().size());
+
     }
 
     public void testReadConfigTest() throws IOException, ScriptException {

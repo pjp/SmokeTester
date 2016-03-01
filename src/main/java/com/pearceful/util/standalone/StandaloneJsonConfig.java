@@ -103,7 +103,11 @@ public class StandaloneJsonConfig {
                             systemVariables.put(varName, configFile);
                             break;
                         case "CMD_LINE":
-                            systemVariables.put(varName, cmdLineArgs.toString());
+                            StringBuilder sb = new StringBuilder();
+                            for(String arg : cmdLineArgs) {
+                                sb.append(arg).append( " ");
+                            }
+                            systemVariables.put(varName, sb.toString().trim());
                             break;
                         case "TIMEOUT":
                             systemVariables.put(varName, "" + timeoutSecondsForAllTests);
@@ -137,10 +141,18 @@ public class StandaloneJsonConfig {
                     continue;
                 }
 
-//                varVal  = (String)systemVar.get("inline_value_from_matching_tag");
-//                if(null != varVal) {
-//                    continue;
-//                }
+                Map<String, String> valueMap = (Map<String, String>)systemVar.get("inline_value_from_matching_tag");
+                if(null != valueMap) {
+                    ////////////////////////////////
+                    // Find a match case insensitive
+                    for(String key : valueMap.keySet()) {
+                        if(key.equalsIgnoreCase(tag)) {
+                            varVal = valueMap.get(key);
+                            systemVariables.put(varName, varVal);
+                        }
+                    }
+                    continue;
+                }
             }
         }
 
