@@ -4,17 +4,13 @@
     "thread_pool_size": 2,
     "system_variables": [
       {"name": "ST_VERSION",          "internal_value": "VERSION"},
+      {"name": "ST_CONFIG_FILE",      "internal_value": "CONFIG_FILE"},
       {"name": "ST_CMD_LINE",         "internal_value": "CMD_LINE"},
       {"name": "ST_TIMEOUT",          "internal_value": "TIMEOUT"},
       {"name": "ST_THREAD_POOL_SIZE", "internal_value": "THREAD_POOL_SIZE"},
       {"name": "ST_ID",               "internal_value": "ID"},
       {"name": "ST_OS",               "internal_value": "OS"},
-      {"name": "ST_TAG", "internal_value_from_matching_tag": {
-        "DEV":  "DEV",
-        "SIT":  "SIT",
-        "UAT":  "UAT",
-        "PROD": "PROD"}
-      },
+      {"name": "ST_TAG",              "internal_value": "TAG"},
       {
         "name": "ST_VALUE1",
         "inline_value_from_matching_tag": {
@@ -24,15 +20,7 @@
           "PROD": "Hello from PROD"
         }
       },
-      {
-        "name": "ST_VALUE2",
-        "inline_value_from_matching_tag": {
-          "DEV": "Bye from DEV",
-          "SIT": "Bye from SIT",
-          "UAT": "Bye from UAT",
-          "PROD": "Bye from PROD"
-        }
-      }
+      {"name": "ST_VALUE2", "inline_value": "Howzit" }
     ]
   },
   "test": {
