@@ -17,9 +17,6 @@ public class StandaloneJsonConfig {
 
     public JsonSetup setup;
     public List<JsonTestDefinition> testDefinitions = new ArrayList<>();
-    private String[] cmdLineArgs;
-    private String tag;
-    private String configFile;
 
     /**
      *
@@ -28,14 +25,14 @@ public class StandaloneJsonConfig {
      * @param tag
      */
     public StandaloneJsonConfig(final String configFile, final String[] cmdLineArgs, final String tag) throws IOException, ScriptException {
-        this.configFile     = configFile;
-        this.cmdLineArgs    = cmdLineArgs;
-        this.tag            = tag;
-
-        configure();
+        configure(configFile, cmdLineArgs, tag);
     }
 
-    protected void configure() throws IOException, ScriptException {
+    protected void configure(
+            final String configFile,
+            final String[] cmdLineArgs,
+            final String tag) throws IOException, ScriptException {
+
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine engine     = sem.getEngineByName("javascript");
 
@@ -68,6 +65,9 @@ public class StandaloneJsonConfig {
         private int timeoutSecondsForAllTests;
         private int threadPoolSize;
         private Map<String, String> systemVariables = new HashMap<>();
+        private String configFile;
+        private String tag;
+        private String[] cmdLineArgs;
 
         public static enum INTERNAL_VALUE_NAMES {
             VERSION,
@@ -85,6 +85,10 @@ public class StandaloneJsonConfig {
                 final String tag,
                 final String[] cmdLineArgs,
                 final Map<String, Object>config) {
+
+            this.configFile = configFile;
+            this.tag        = tag;
+            this.cmdLineArgs= cmdLineArgs;
 
             timeoutSecondsForAllTests                   = (int)config.get("timeout_seconds_for_all_tests");
             threadPoolSize                              = (int)config.get("thread_pool_size");
@@ -156,6 +160,18 @@ public class StandaloneJsonConfig {
             }
         }
 
+        public String getConfigFile() {
+            return configFile;
+        }
+
+        public String getTag() {
+            return tag;
+        }
+
+        public String[] getCmdLineArgs() {
+            return cmdLineArgs;
+        }
+
         public int getTimeoutSecondsForAllTests() {
             return timeoutSecondsForAllTests;
         }
@@ -180,13 +196,56 @@ public class StandaloneJsonConfig {
         private String id;
         private String cmd;
         private RUN run;
+        private List<String> runTags = new ArrayList<>();
 
         public static enum RUN {
             ALWAYS,IF_TAG_MATCHES,UNLESS_TAG_MATCHES, NEVER
         };
 
         public JsonTestDefinition(final String id, final Map<String, Object>config) {
-            this.id = id;
+            this.id                     = id;
+
+            Map<String, Object> entry   = (Map<String, Object>)config;
+
+            cmd                          = (String)entry.get("cmd");
+            Map<String, Object> action   = (Map<String, Object>)entry.get("run");
+
+            Object always               =   action.get("always");
+            Object ifTagMatches         =   action.get("if_tag_matches");
+            Object unlessTagMMatches    =   action.get("unless_tag_matches");
+            Object never                =   action.get("never");
+
+            if(null != always) {
+                run = RUN.ALWAYS;
+
+            } else if(null != ifTagMatches) {
+                run = RUN.IF_TAG_MATCHES;
+                runTags.addAll((List<String>)ifTagMatches);
+
+            } else if(null != unlessTagMMatches) {
+                run = RUN.UNLESS_TAG_MATCHES;
+                runTags.addAll((List<String>)unlessTagMMatches);
+
+            } else if(null != never) {
+                run = RUN.NEVER;
+
+            }
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getCmd() {
+            return cmd;
+        }
+
+        public RUN getRun() {
+            return run;
+        }
+
+        public List<String> getRunTags() {
+            return runTags;
         }
     }
 }
