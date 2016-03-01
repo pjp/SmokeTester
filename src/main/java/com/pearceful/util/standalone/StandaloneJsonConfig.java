@@ -69,17 +69,6 @@ public class StandaloneJsonConfig {
         private String tag;
         private String[] cmdLineArgs;
 
-        public static enum INTERNAL_VALUE_NAMES {
-            VERSION,
-            CONFIG_FILE,
-            CMD_LINE,
-            TIMEOUT,
-            THREAD_POOL_SIZE,
-            ID,
-            OS,
-            TAG
-        }
-
         public JsonSetup(
                 final String configFile,
                 final String tag,
@@ -183,13 +172,6 @@ public class StandaloneJsonConfig {
         public Map<String, String> getSystemVariables() {
             return systemVariables;
         }
-
-        public static enum VALUE_FROM {
-            INTERNAL,
-            INLINE_VALUE,
-            INLINE_VALUE_FROM_MATCHING_TAG
-        }
-
     }
 
     public static class JsonTestDefinition {

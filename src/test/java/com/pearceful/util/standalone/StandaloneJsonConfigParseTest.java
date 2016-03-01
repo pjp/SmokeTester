@@ -38,6 +38,7 @@ public class StandaloneJsonConfigParseTest extends TestCase {
         assertEquals(tag,                       config.setup.getSystemVariables().get("ST_TAG"));
         assertEquals(SmokeTestContext.VERSION,  config.setup.getSystemVariables().get("ST_VERSION"));
         assertEquals("600",                     config.setup.getSystemVariables().get("ST_TIMEOUT"));
+        assertEquals("2",                       config.setup.getSystemVariables().get("ST_THREAD_POOL_SIZE"));
 
         assertEquals("Hello from DEV",  config.setup.getSystemVariables().get("ST_VALUE1"));
         assertEquals("Howzit",          config.setup.getSystemVariables().get("ST_VALUE2"));
