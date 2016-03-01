@@ -27,8 +27,7 @@ public class StandaloneJsonConfigParseTest extends TestCase {
         String[] cmdLineArgs    = {"a", "b", "c"};
         String tag              = "DEV";
 
-        StandaloneJsonConfig config =
-                new StandaloneJsonConfig(jsonFile, cmdLineArgs, tag);
+        StandaloneJsonConfig config =   new StandaloneJsonConfig(jsonFile, cmdLineArgs, tag);
 
         assertEquals(600, config.setup.getTimeoutSecondsForAllTests());
         assertEquals(2,   config.setup.getThreadPoolSize());
@@ -42,6 +41,11 @@ public class StandaloneJsonConfigParseTest extends TestCase {
 
         assertEquals("Hello from DEV",  config.setup.getSystemVariables().get("ST_VALUE1"));
         assertEquals("Howzit",          config.setup.getSystemVariables().get("ST_VALUE2"));
+
+        tag     =   "UAT";
+        config  =    new StandaloneJsonConfig(jsonFile, cmdLineArgs, tag);
+        assertEquals(tag,                       config.setup.getSystemVariables().get("ST_TAG"));
+        assertEquals("Hello from UAT",          config.setup.getSystemVariables().get("ST_VALUE1"));
     }
 
     public void testReadConfigTest() throws IOException, ScriptException {
