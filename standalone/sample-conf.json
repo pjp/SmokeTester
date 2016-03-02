@@ -25,11 +25,11 @@
   "test": {
     "id1w": {
       "run" : {"always": true},
-      "cmd":"echo OS is [%ST_OS%] with selector tag [%ST_TAG%] and value [%ST_VALUE1%]"
+      "cmd":"echo OS is [%ST_OS%] with selector tag [%ST_TAG%] and values [%ST_VALUE1%], [%ST_VALUE2%]"
     },
     "id1u": {
       "run" : {"always": true},
-      "cmd":"echo OS is [$ST_OS] with selector tag [$ST_TAG] and value [$ST_VALUE1]"
+      "cmd":"echo OS is [$ST_OS] with selector tag [$ST_TAG] and values [$ST_VALUE1], [$ST_VALUE2]"
     },
     "id2": {
       "run" : {"if_tag_matches": ["DEV"]},

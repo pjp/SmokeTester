@@ -62,7 +62,7 @@ public class StandaloneJsonConfigParseTest extends TestCase {
         assertNotNull(testDef);
         assertEquals("id1w", testDef.getId());
         assertEquals(
-                "echo OS is [%ST_OS%] with selector tag [%ST_TAG%] and value [%ST_VALUE1%]",
+                "echo OS is [%ST_OS%] with selector tag [%ST_TAG%] and values [%ST_VALUE1%], [%ST_VALUE2%]",
                 testDef.getCmd());
 
         assertEquals(StandaloneJsonConfig.JsonTestDefinition.RUN.ALWAYS, testDef.getRun());
@@ -72,7 +72,7 @@ public class StandaloneJsonConfigParseTest extends TestCase {
         assertNotNull(testDef);
         assertEquals("id1u", testDef.getId());
         assertEquals(
-                "echo OS is [$ST_OS] with selector tag [$ST_TAG] and value [$ST_VALUE1]",
+                "echo OS is [$ST_OS] with selector tag [$ST_TAG] and values [$ST_VALUE1], [$ST_VALUE2]",
                 testDef.getCmd());
 
         assertEquals(StandaloneJsonConfig.JsonTestDefinition.RUN.ALWAYS, testDef.getRun());
