@@ -308,13 +308,24 @@ public class StandaloneJsonConfig {
             Object never                =   action.get("never");
 
             if(null != always) {
+                if(cmd.trim().length() < 1) {
+                    LOGGER.warn("constructor: Empty cmd for id " + id);
+                }
                 run = RUN.ALWAYS;
 
             } else if(null != ifTagMatches) {
+                if(cmd.trim().length() < 1) {
+                    LOGGER.warn("constructor: Empty cmd for id " + id);
+                }
+
                 run = RUN.IF_TAG_MATCHES;
                 runTags.addAll((List<String>)ifTagMatches);
 
             } else if(null != unlessTagMMatches) {
+                if(cmd.trim().length() < 1) {
+                    LOGGER.warn("constructor: Empty cmd for id " + id);
+                }
+
                 run = RUN.UNLESS_TAG_MATCHES;
                 runTags.addAll((List<String>)unlessTagMMatches);
 
