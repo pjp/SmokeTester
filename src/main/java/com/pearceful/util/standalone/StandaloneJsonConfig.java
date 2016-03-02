@@ -1,6 +1,7 @@
 package com.pearceful.util.standalone;
 
 import com.pearceful.util.SmokeTestContext;
+import org.apache.log4j.Logger;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -8,12 +9,14 @@ import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
  * Created by ppearce on 2016-02-29.
  */
 public class StandaloneJsonConfig {
+    private static final Logger LOGGER                  = Logger.getLogger(StandaloneJsonConfig.class);
 
     public JsonSetup setup;
     public List<JsonTestDefinition> testDefinitions = new ArrayList<>();
@@ -35,30 +38,80 @@ public class StandaloneJsonConfig {
 
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine engine     = sem.getEngineByName("javascript");
+        Path jsonConfigPath     = FileSystems.getDefault().getPath(configFile);
 
-        String json = new String(
-                Files.readAllBytes(
-                        FileSystems.getDefault().getPath(configFile)));
+        if(Files.notExists(jsonConfigPath)) {
+            String errMsg =
+                    String.format(
+                            "JSON configuration file [%s] cannot be accessed, cannot continue",
+                            configFile);
+            LOGGER.error("configure: " + errMsg);
+            throw new RuntimeException(errMsg);
+        }
 
+        String json = new String(Files.readAllBytes(jsonConfigPath));
+
+        //////////////////
+        // Semantic checks
+        if(json.length() < 8) {
+            String errMsg =
+                    String.format(
+                            "JSON configuration file [%s] contains too few characters, cannot continue",
+                            configFile);
+            LOGGER.error("configure: " + errMsg);
+            throw new RuntimeException(errMsg);
+        }
+
+        //////////////////////////////////////////////////////////////
+        // Could throw exceptions at this point if the JSON is invalid
         String script = "Java.asJSONCompatible(" + json + ")";
         Object result = engine.eval(script);
 
+        //////////////////////////////
+        // Get top level objects first
         Map config = (Map)result;
 
-        setup   = new JsonSetup(
-                configFile,
-                tag,
-                cmdLineArgs,
-                (Map<String, Object>)config.get("setup"));
+        Map<String, Object> jsonSetup           = (Map<String, Object>)config.get("setup");
+        Map<String, Map<String, Object>> tests  = (Map<String, Map<String, Object>>)config.get("test");
 
-        Map<String, Map<String, Object>> tests = (Map<String, Map<String, Object>>)config.get("test");
+        ////////////////
+        // Sanity checks
+        if(null == jsonSetup) {
+            String errMsg =
+                    String.format(
+                            "No top level \"%s\" JSON object found in file %s, cannot continue",
+                            "setup",
+                            configFile);
+            LOGGER.error("configure: " + errMsg);
+            throw new RuntimeException(errMsg);
+        }
+
+        if(null == tests) {
+            String errMsg =
+                    String.format(
+                            "No top level \"%s\" JSON object found in file %s, cannot continue",
+                            "tests",
+                            configFile);
+            LOGGER.error("configure: " + errMsg);
+            throw new RuntimeException(errMsg);
+        }
+
+        setup = new JsonSetup(configFile,
+                                tag,
+                                cmdLineArgs,
+                                jsonSetup);
+
         for(Map.Entry<String, Map<String, Object>> entry : tests.entrySet()) {
             String id                           = entry.getKey();
             Map<String, Object>conf             = entry.getValue();
-            JsonTestDefinition testDefinition   = new JsonTestDefinition(id, conf);
 
-            testDefinitions.add(testDefinition);
+            try {
+                JsonTestDefinition testDefinition = new JsonTestDefinition(id, conf);
+                testDefinitions.add(testDefinition);
+            } catch(RuntimeException e) {}
         }
+
+        LOGGER.info("configure: Found "+testDefinitions.size() + " valid tests.");
     }
 
     public static class JsonSetup {
@@ -68,6 +121,29 @@ public class StandaloneJsonConfig {
         private String configFile;
         private String tag;
         private String[] cmdLineArgs;
+
+        @Override
+        public String toString() {
+            StringBuilder sysVars = new StringBuilder();
+            for(Map.Entry<String, String> sysVar : systemVariables.entrySet()) {
+                sysVars.append(sysVar.getKey()).append("=").append(sysVar.getValue()).append(" ");
+            }
+
+            StringBuilder cmdLine = new StringBuilder();
+            for(String arg : cmdLineArgs) {
+                cmdLine.append(arg).append(" ");
+            }
+
+            return String.format(
+                    "cmdLineArgs [%s], configFile [%s], tag [%s], timeoutSecondsForAllTests [%d], threadPoolSize [%d], " +
+                    "systemVariables [%s]",
+                    cmdLine,
+                    configFile,
+                    tag,
+                    timeoutSecondsForAllTests,
+                    threadPoolSize,
+                    sysVars.toString());
+        }
 
         public JsonSetup(
                 final String configFile,
@@ -79,73 +155,80 @@ public class StandaloneJsonConfig {
             this.tag        = tag;
             this.cmdLineArgs= cmdLineArgs;
 
-            timeoutSecondsForAllTests                   = (int)config.get("timeout_seconds_for_all_tests");
-            threadPoolSize                              = (int)config.get("thread_pool_size");
+            timeoutSecondsForAllTests                   = (int)config.getOrDefault("timeout_seconds_for_all_tests", 0);
+            threadPoolSize                              = (int)config.getOrDefault("thread_pool_size", 5);
             List<Map<String, Object>> systemVars        = (List<Map<String, Object>>)config.get("system_variables");
 
-            for(Map<String, Object>systemVar : systemVars) {
-                String varName = (String)systemVar.get("name");
+            if(null != systemVars && systemVars.size() > 0) {
+                for (Map<String, Object> systemVar : systemVars) {
+                    String varName = (String) systemVar.get("name");
 
-                String varVal  = (String)systemVar.get("internal_value");
-                if(null != varVal) {
-                    switch(varVal) {
-                        case "VERSION":
-                            systemVariables.put(varName, SmokeTestContext.VERSION);
-                            break;
-                        case "CONFIG_FILE":
-                            systemVariables.put(varName, configFile);
-                            break;
-                        case "CMD_LINE":
-                            StringBuilder sb = new StringBuilder();
-                            for(String arg : cmdLineArgs) {
-                                sb.append(arg).append( " ");
-                            }
-                            systemVariables.put(varName, sb.toString().trim());
-                            break;
-                        case "TIMEOUT":
-                            systemVariables.put(varName, "" + timeoutSecondsForAllTests);
-                            break;
-                        case "THREAD_POOL_SIZE":
-                            systemVariables.put(varName, "" + threadPoolSize);
-                            break;
-                        case "ID":
-                            systemVariables.put(varName,"ID-PLACEHOLDER");
-                            break;
-                        case "OS":
-                            String osName   = System.getProperty("os.name");
-                            osName          = osName.toLowerCase(Locale.ENGLISH);
+                    String varVal = (String) systemVar.get("internal_value");
+                    if (null != varVal) {
+                        switch (varVal) {
+                            case "VERSION":
+                                systemVariables.put(varName, SmokeTestContext.VERSION);
+                                break;
+                            case "CONFIG_FILE":
+                                systemVariables.put(varName, configFile);
+                                break;
+                            case "CMD_LINE":
+                                StringBuilder sb = new StringBuilder();
+                                for (String arg : cmdLineArgs) {
+                                    sb.append(arg).append(" ");
+                                }
+                                systemVariables.put(varName, sb.toString().trim());
+                                break;
+                            case "TIMEOUT":
+                                systemVariables.put(varName, "" + timeoutSecondsForAllTests);
+                                break;
+                            case "THREAD_POOL_SIZE":
+                                systemVariables.put(varName, "" + threadPoolSize);
+                                break;
+                            case "ID":
+                                systemVariables.put(varName, "ID-PLACEHOLDER");
+                                break;
+                            case "OS":
+                                String osName = System.getProperty("os.name");
+                                osName = osName.toLowerCase(Locale.ENGLISH);
 
-                            if (osName.indexOf("windows") != -1) {
-                                systemVariables.put(varName, "windows");
-                            } else {
-                                systemVariables.put(varName, "unix");
-                            }
-                            break;
-                        case "TAG":
-                            systemVariables.put(varName, tag);
-                            break;
-                    }
-                    continue;
-                }
-
-                varVal  = (String)systemVar.get("inline_value") ;
-                if(null != varVal) {
-                    systemVariables.put(varName, varVal);
-                    continue;
-                }
-
-                Map<String, String> valueMap = (Map<String, String>)systemVar.get("inline_value_from_matching_tag");
-                if(null != valueMap) {
-                    ////////////////////////////////
-                    // Find a match case insensitive
-                    for(String key : valueMap.keySet()) {
-                        if(key.equalsIgnoreCase(tag)) {
-                            varVal = valueMap.get(key);
-                            systemVariables.put(varName, varVal);
+                                if (osName.indexOf("windows") != -1) {
+                                    systemVariables.put(varName, "windows");
+                                } else {
+                                    systemVariables.put(varName, "unix");
+                                }
+                                break;
+                            case "TAG":
+                                systemVariables.put(varName, tag);
+                                break;
+                            default:
+                                LOGGER.warn("constructor: Unknown \"internal_value\" [" + varVal + "]");
+                                break;
                         }
+                        continue;
                     }
-                    continue;
+
+                    varVal = (String) systemVar.get("inline_value");
+                    if (null != varVal) {
+                        systemVariables.put(varName, varVal);
+                        continue;
+                    }
+
+                    Map<String, String> valueMap = (Map<String, String>) systemVar.get("inline_value_from_matching_tag");
+                    if (null != valueMap) {
+                        ////////////////////////////////
+                        // Find a match case insensitive
+                        for (String key : valueMap.keySet()) {
+                            if (key.equalsIgnoreCase(tag)) {
+                                varVal = valueMap.get(key);
+                                systemVariables.put(varName, varVal);
+                            }
+                        }
+                        continue;
+                    }
                 }
+            } else {
+                LOGGER.info("constructor: No \"system_variables\" section defined.");
             }
         }
 
@@ -184,6 +267,11 @@ public class StandaloneJsonConfig {
             ALWAYS,IF_TAG_MATCHES,UNLESS_TAG_MATCHES, NEVER
         };
 
+        @Override
+        public String toString() {
+            return String.format("id [%s], run [%s], cmd [%s]", id, run, cmd);
+        }
+
         public JsonTestDefinition(final String id, final Map<String, Object>config) {
             this.id                     = id;
 
@@ -191,6 +279,28 @@ public class StandaloneJsonConfig {
 
             cmd                          = (String)entry.get("cmd");
             Map<String, Object> action   = (Map<String, Object>)entry.get("run");
+
+            ////////////////
+            // Sanity checks
+            if(null == cmd) {
+                String errMsg =
+                        String.format(
+                                "No \"%s\" JSON object found for id [%s], cannot continue",
+                                "cmd",
+                                id);
+                LOGGER.error("constructor: " + errMsg);
+                throw new RuntimeException(errMsg);
+            }
+
+            if(null == action) {
+                String errMsg =
+                        String.format(
+                                "No \"%s\" JSON object found for id [%s], cannot continue",
+                                "run",
+                                id);
+                LOGGER.error("constructor: " + errMsg);
+                throw new RuntimeException(errMsg);
+            }
 
             Object always               =   action.get("always");
             Object ifTagMatches         =   action.get("if_tag_matches");
@@ -211,7 +321,11 @@ public class StandaloneJsonConfig {
             } else if(null != never) {
                 run = RUN.NEVER;
 
+            } else {
+                LOGGER.info("constructor: Unknown \"run\" value");
             }
+
+            LOGGER.info("constructor: " + this);
         }
 
         public String getId() {
