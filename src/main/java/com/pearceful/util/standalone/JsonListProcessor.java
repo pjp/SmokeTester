@@ -7,9 +7,6 @@ import com.pearceful.util.SmokeTestStrategy;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Matcher;
@@ -18,10 +15,9 @@ import java.util.regex.Pattern;
 /**
  * Created by Paul Pearce on 2016-01-04.
  *
- * Read a file that contains commands or shell scripts (one per line) to execute
- * in parallel.
+ * Read a file that contains commands to execute in parallel.
  *
- * Example file is scripts-xxx.txt which contains for information about how
+ * Example file is sample-conf.json which contains for information about how
  * to configure and what to run.
  *
  */
@@ -43,8 +39,8 @@ public class JsonListProcessor {
             showUsage(exitStatus, "Need a file name to read as input and an selector tag!");
         }
 
-        Path path       = Paths.get(args[0]);
-        String stTag    = args[1];
+        String jsonConfigFile   = args[0];
+        String stTag            = args[1];
 
         if(args.length > 2) {
             filter  = args[2];
@@ -59,6 +55,16 @@ public class JsonListProcessor {
 
         }
 
+        StandaloneJsonConfig config = null;
+
+        try {
+            config = new StandaloneJsonConfig(jsonConfigFile, args, stTag);
+        } catch(Exception e) {
+            LOGGER.error("main: Problem parsing the json configuration", e);
+
+            System.exit(3) ;
+        }
+
         Set<SmokeTestStrategy> jsonTests = new CopyOnWriteArraySet<>();
 
         int failedCount = 0;
@@ -66,27 +72,23 @@ public class JsonListProcessor {
 
         long start      = System.nanoTime();
 
-
         try{
-            List<String> lines  = Files.readAllLines(path);
-            int lineNumber      = 0;
-
-            for(String line : lines) {
+            for(StandaloneJsonConfig.JsonTestDefinition testDef : config.testDefinitions) {
 
                 ////////////////////////////////////////////
                 // Start the selection process for this line
-                boolean selected        = testToBeSelected(lineNumber, line, stTag);
+                boolean selected        = testToBeSelected(stTag, testDef);
                 boolean passedFilter    = false;
 
                 if(selected) {
                     //////////////////////////
                     // Matched the environment
-                    String cmdLine = stripLeadingToken(line);
+                    String cmdLine = testDef.getCmd();
 
                     if (null != selectionFilter) {
                         //////////////////////////////////////
                         // A command line filter was specified
-                        passedFilter = selectionFilter.isMatch(lineNumber, cmdLine);
+                        passedFilter = selectionFilter.isMatch(testDef.getId(), cmdLine);
                     } else {
                         passedFilter = true;
                     }
@@ -94,18 +96,18 @@ public class JsonListProcessor {
                     /////////////////////////////////////////////////////////////
                     // Finally check if the line passed all checks to be executed
                     if(passedFilter) {
-                        jsonTests.add();
+                        jsonTests.add(new JsonTestProcessor(config.setup, testDef));
                     }
                 }
 
                 LOGGER.debug(
                         String.format(
-                                "main: selected [%-5s], passedFilter [%-5s], line [%4d], envValue [%s], cmd [%s]",
+                                "main: selected [%-5s], passedFilter [%-5s], id [%4s], envValue [%s], cmd [%s]",
                                 selected,
                                 passedFilter,
-                                lineNumber,
-                                envValueToBeSet,
-                                line));
+                                testDef.getId(),
+                                config.setup.getSystemVariables(),
+                                testDef.getCmd()));
             }
 
             //////////////////////////////
@@ -180,9 +182,6 @@ public class JsonListProcessor {
             if(failedCount > 0) {
                 exitStatus = 5;
             }
-        } catch (IOException e) {
-            System.err.println(e);
-            exitStatus = 4;
         } catch (SmokeTestException e) {
             System.err.println(e);
             exitStatus = 3;

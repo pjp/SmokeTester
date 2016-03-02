@@ -8,7 +8,6 @@
       {"name": "ST_CMD_LINE",         "internal_value": "CMD_LINE"},
       {"name": "ST_TIMEOUT",          "internal_value": "TIMEOUT"},
       {"name": "ST_THREAD_POOL_SIZE", "internal_value": "THREAD_POOL_SIZE"},
-      {"name": "ST_ID",               "internal_value": "ID"},
       {"name": "ST_OS",               "internal_value": "OS"},
       {"name": "ST_TAG",              "internal_value": "TAG"},
       {

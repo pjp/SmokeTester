@@ -185,9 +185,6 @@ public class StandaloneJsonConfig {
                             case "THREAD_POOL_SIZE":
                                 systemVariables.put(varName, "" + threadPoolSize);
                                 break;
-                            case "ID":
-                                systemVariables.put(varName, "ID-PLACEHOLDER");
-                                break;
                             case "OS":
                                 String osName = System.getProperty("os.name");
                                 osName = osName.toLowerCase(Locale.ENGLISH);

@@ -74,5 +74,5 @@ public class RawJsonConfigParseTest extends TestCase{
         ///////////////////////
         // Check user variables
         List variables = (List)setup.get("system_variables");
-        assertEquals(10, variables.size());
+        assertEquals(9, variables.size());
     }}

@@ -31,7 +31,7 @@ public class StandaloneJsonConfigParseTest extends TestCase {
 
         assertEquals(600, config.setup.getTimeoutSecondsForAllTests());
         assertEquals(2,   config.setup.getThreadPoolSize());
-        assertEquals(10,  config.setup.getSystemVariables().size());
+        assertEquals(9,   config.setup.getSystemVariables().size());
 
         assertEquals(jsonFile,                  config.setup.getSystemVariables().get("ST_CONFIG_FILE"));
         assertEquals(tag,                       config.setup.getSystemVariables().get("ST_TAG"));
