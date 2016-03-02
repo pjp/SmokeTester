@@ -23,9 +23,13 @@
     ]
   },
   "test": {
-    "id1": {
+    "id1w": {
       "run" : {"always": true},
-      "cmd":"echo OS is [$ST_OS] with selector tag [$ST_TAG] and value [$ST_VALUE1], from test id [$ST_ID]"
+      "cmd":"echo OS is [%ST_OS%] with selector tag [%ST_TAG%] and value [%ST_VALUE1%]"
+    },
+    "id1u": {
+      "run" : {"always": true},
+      "cmd":"echo OS is [$ST_OS] with selector tag [$ST_TAG] and value [$ST_VALUE1]"
     },
     "id2": {
       "run" : {"if_tag_matches": ["DEV"]},

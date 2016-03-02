@@ -55,20 +55,31 @@ public class StandaloneJsonConfigParseTest extends TestCase {
         StandaloneJsonConfig config =
                 new StandaloneJsonConfig(jsonFile, cmdLineArgs, tag);
 
-        assertEquals(4, config.testDefinitions.size());
+        assertEquals(5, config.testDefinitions.size());
 
         ////////////////////////////////////////////////////////////////////////////////
         StandaloneJsonConfig.JsonTestDefinition testDef = config.testDefinitions.get(0);
         assertNotNull(testDef);
-        assertEquals("id1", testDef.getId());
+        assertEquals("id1w", testDef.getId());
         assertEquals(
-                "echo OS is [$ST_OS] with selector tag [$ST_TAG] and value [$ST_VALUE1], from test id [$ST_ID]",
+                "echo OS is [%ST_OS%] with selector tag [%ST_TAG%] and value [%ST_VALUE1%]",
                 testDef.getCmd());
 
         assertEquals(StandaloneJsonConfig.JsonTestDefinition.RUN.ALWAYS, testDef.getRun());
 
         ////////////////////////////////////////////////////////////////////////////////
         testDef = config.testDefinitions.get(1);
+        assertNotNull(testDef);
+        assertEquals("id1u", testDef.getId());
+        assertEquals(
+                "echo OS is [$ST_OS] with selector tag [$ST_TAG] and value [$ST_VALUE1]",
+                testDef.getCmd());
+
+        assertEquals(StandaloneJsonConfig.JsonTestDefinition.RUN.ALWAYS, testDef.getRun());
+        assertEquals(0, testDef.getRunTags().size());
+
+        ////////////////////////////////////////////////////////////////////////////////
+        testDef = config.testDefinitions.get(2);
         assertNotNull(testDef);
         assertEquals("id2", testDef.getId());
         assertEquals(
@@ -80,7 +91,7 @@ public class StandaloneJsonConfigParseTest extends TestCase {
         assertEquals("DEV", testDef.getRunTags().get(0));
 
         ////////////////////////////////////////////////////////////////////////////////
-        testDef = config.testDefinitions.get(2);
+        testDef = config.testDefinitions.get(3);
         assertNotNull(testDef);
         assertEquals("id3", testDef.getId());
         assertEquals(
@@ -88,11 +99,9 @@ public class StandaloneJsonConfigParseTest extends TestCase {
                 testDef.getCmd());
 
         assertEquals(StandaloneJsonConfig.JsonTestDefinition.RUN.UNLESS_TAG_MATCHES, testDef.getRun());
-        assertEquals(1, testDef.getRunTags().size());
-        assertEquals("PROD", testDef.getRunTags().get(0));
 
         ////////////////////////////////////////////////////////////////////////////////
-        testDef = config.testDefinitions.get(3);
+        testDef = config.testDefinitions.get(4);
         assertNotNull(testDef);
         assertEquals("id4", testDef.getId());
         assertEquals(

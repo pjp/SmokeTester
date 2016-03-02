@@ -33,6 +33,7 @@ public class JsonTestProcessor extends BaseSmokeTestStrategy {
     public JsonTestProcessor(final StandaloneJsonConfig.JsonSetup setup,
                              final StandaloneJsonConfig.JsonTestDefinition testDef) {
 
+        id              =   testDef.getId();
         this.setup      =   setup;
         this.testDef    =   testDef;
     }
@@ -102,7 +103,13 @@ public class JsonTestProcessor extends BaseSmokeTestStrategy {
 
     @Override
     public SmokeTestResult validate() {
-        return null;
+        // Simply create a Strategy result to indicate PASS or FAIL, the actual
+        // validation was done in the execute method
+        SmokeTestResult result  = new SmokeTestResult(id, state, elapsedNs, msg);
+
+        LOGGER.trace(String.format("validate: result [%s] line [%s %s]", result, id, testDef.getCmd()));
+
+        return result;
     }
 
     /**
