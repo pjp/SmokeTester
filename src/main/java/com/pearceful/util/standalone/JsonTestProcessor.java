@@ -40,21 +40,16 @@ public class JsonTestProcessor extends BaseSmokeTestStrategy {
 
     @Override
     public void execute() throws SmokeTestException {
-        long startNs    = System.nanoTime();
-        int exitValue   = -1;
-        boolean runningInWindows    =   false;
+        long startNs                = System.nanoTime();
+        int exitValue               = -1;
+        boolean runningInWindows    =  JsonListProcessor.onWindows();
 
         ///////////////////////////
         // Process the command line
         try {
             ProcessBuilder pb = null;
 
-            ////////////////////////////////////////////////////////
-            // Quick and dirty test for determining the shell to use
-            String osName = System.getProperty("os.name");
-            osName = osName.toLowerCase(Locale.ENGLISH);
-
-            if (osName.indexOf("windows") != -1) {
+            if (runningInWindows) {
                 pb = new ProcessBuilder(WINDOWS_SHELL, WINDOWS_SHELL_PARAM, testDef.getCmd());
                 runningInWindows = true;
             } else {

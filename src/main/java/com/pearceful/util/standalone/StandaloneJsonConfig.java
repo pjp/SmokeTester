@@ -186,10 +186,7 @@ public class StandaloneJsonConfig {
                                 systemVariables.put(varName, "" + threadPoolSize);
                                 break;
                             case "OS":
-                                String osName = System.getProperty("os.name");
-                                osName = osName.toLowerCase(Locale.ENGLISH);
-
-                                if (osName.indexOf("windows") != -1) {
+                                if (JsonListProcessor.onWindows()) {
                                     systemVariables.put(varName, "windows");
                                 } else {
                                     systemVariables.put(varName, "unix");

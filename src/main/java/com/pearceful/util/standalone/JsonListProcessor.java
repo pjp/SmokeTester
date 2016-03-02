@@ -344,6 +344,21 @@ public class JsonListProcessor {
         return false;
     }
 
+    protected static boolean onWindows() {
+        boolean onWindows = false;
+
+        ////////////////////////////////////////////////////////
+        // Quick and dirty test for determining the shell to use
+        String osName = System.getProperty("os.name");
+        osName = osName.toLowerCase(Locale.ENGLISH);
+
+        if (osName.indexOf("windows") != -1) {
+            onWindows = true;
+        }
+
+        return onWindows;
+    }
+
     static class TestSelectionFilter {
         public static final String REGEX_FILTER_PREFIX          =   "==";
         public static final String REGEX_FILTER_PREFIX_INVERTED =   "=!";
