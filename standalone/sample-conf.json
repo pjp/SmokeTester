@@ -1,0 +1,54 @@
+{
+  "comment1": "Configuration file for the smoke tests, the setup section has to exist, but can be empty.",
+  "setup": {
+    "commentS1" : "All the entries in this section are optional.",
+    "commentS2" : "For environmental_variables, you can change the names of the variables if needed.",
+    "timeout_seconds_for_all_tests": 600,
+    "thread_pool_size": 5,
+    "environmental_variables": [
+      {"name": "ST_VERSION",          "internal_value": "VERSION"},
+      {"name": "ST_CONFIG_FILE",      "internal_value": "CONFIG_FILE"},
+      {"name": "ST_CMD_LINE",         "internal_value": "CMD_LINE"},
+      {"name": "ST_TIMEOUT",          "internal_value": "TIMEOUT"},
+      {"name": "ST_THREAD_POOL_SIZE", "internal_value": "THREAD_POOL_SIZE"},
+      {"name": "ST_OS",               "internal_value": "OS"},
+      {"name": "ST_TAG",              "internal_value": "TAG"},
+      {"name": "ST_VALUE1",           "inline_value_from_matching_tag": {
+                                        "DEV":  "Hello from DEV",
+                                        "SIT":  "Hello from SIT",
+                                        "UAT":  "Hello from UAT",
+                                        "PROD": "Hello from PROD"
+                                      }
+      },
+      {"name": "ST_VALUE2",           "inline_value": "Howzit" }
+    ]
+  },
+  "comment2": "In the mandatory test section below, just make sure the id's are unique, else they will be overwritten.",
+  "test": {
+    "id1w": {
+      "comment" : "The value is ignored when 'always' is specified, this command will always be run.",
+      "run" : {"always": true},
+      "cmd":"echo OS is [%ST_OS%] with selector tag [%ST_TAG%] and values [%ST_VALUE1%], [%ST_VALUE2%]"
+    },
+    "id1u": {
+      "comment" : "The value is ignored when 'always' is specified, this command will always be run",
+      "run" : {"always": true},
+      "cmd":"echo OS is [$ST_OS] with selector tag [$ST_TAG] and values [$ST_VALUE1], [$ST_VALUE2]"
+    },
+    "id2": {
+      "comment" : "Run this command if the tag passed on the command line matches 'DEV'",
+      "run" : {"if_tag_matches": ["DEV"]},
+      "cmd":"hostname"
+    },
+    "id3": {
+      "comment" : "Run this command if the tag passed on the command line does not match 'DEV'",
+      "run" : {"unless_tag_matches": ["PROD"]},
+      "cmd": "xyz $ST_VALUE2"
+    },
+    "id4": {
+      "comment" : "The value is ignored when 'never' is specified, this comand will never be run",
+      "run" : { "never" : true },
+      "cmd":""
+    }
+  }
+}

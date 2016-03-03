@@ -12,7 +12,8 @@ import java.util.concurrent.*;
  * the SmokeTestStrategy interface and BaseSmokeTestStrategy abstract class.
  */
 public class SmokeTestContext {
-    private static final Logger LOGGER                  = Logger.getLogger(SmokeTestContext.class);
+    public static final String VERSION  =   "1.1";
+    private static final Logger LOGGER  = Logger.getLogger(SmokeTestContext.class);
 
     /**
      * Run the smoke tests (multi-threaded)
