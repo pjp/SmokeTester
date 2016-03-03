@@ -46,7 +46,7 @@
       "cmd": "xyz $ST_VALUE2"
     },
     "id4": {
-      "comment" : "The value is ignored when 'never' is specified, this comand will never be run",
+      "comment" : "The value is ignored when 'never' is specified, this command will never be run",
       "run" : { "never" : true },
       "cmd":""
     }
