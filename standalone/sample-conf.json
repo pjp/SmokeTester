@@ -1,8 +1,8 @@
 {
-  "comment": "Configuration file for the smoke tests",
+  "comment1": "Configuration file for the smoke tests",
   "setup": {
-    "comment1" : "All the entries in this section are optional.",
-    "comment2" : "For environmental_variables, you can change the names of the variables if needed.",
+    "commentS1" : "All the entries in this section are optional.",
+    "commentS2" : "For environmental_variables, you can change the names of the variables if needed.",
     "timeout_seconds_for_all_tests": 600,
     "thread_pool_size": 5,
     "environmental_variables": [
@@ -25,6 +25,7 @@
       {"name": "ST_VALUE2", "inline_value": "Howzit" }
     ]
   },
+  "comment2": "In the test section below, just make sure the id's are unique, else they will be overwritten.",
   "test": {
     "id1w": {
       "comment" : "The value is ignored when 'always' is specified, this command will always be run.",
