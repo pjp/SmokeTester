@@ -13,16 +13,14 @@
       {"name": "ST_THREAD_POOL_SIZE", "internal_value": "THREAD_POOL_SIZE"},
       {"name": "ST_OS",               "internal_value": "OS"},
       {"name": "ST_TAG",              "internal_value": "TAG"},
-      {
-        "name": "ST_VALUE1",
-        "inline_value_from_matching_tag": {
-          "DEV": "Hello from DEV",
-          "SIT": "Hello from SIT",
-          "UAT": "Hello from UAT",
-          "PROD": "Hello from PROD"
-        }
+      {"name": "ST_VALUE1",           "inline_value_from_matching_tag": {
+                                        "DEV":  "Hello from DEV",
+                                        "SIT":  "Hello from SIT",
+                                        "UAT":  "Hello from UAT",
+                                        "PROD": "Hello from PROD"
+                                      }
       },
-      {"name": "ST_VALUE2", "inline_value": "Howzit" }
+      {"name": "ST_VALUE2",           "inline_value": "Howzit" }
     ]
   },
   "comment2": "In the mandatory test section below, just make sure the id's are unique, else they will be overwritten.",
