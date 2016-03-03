@@ -41,7 +41,7 @@ public class JsonTestProcessor extends BaseSmokeTestStrategy {
     public void execute() throws SmokeTestException {
         long startNs                = System.nanoTime();
         int exitValue               = -1;
-        boolean runningInWindows    =  JsonListProcessor.onWindows();
+        boolean runningInWindows    =  JsonConfigProcessor.onWindows();
 
         ///////////////////////////
         // Process the command line

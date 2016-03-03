@@ -20,10 +20,10 @@ import java.util.regex.Pattern;
  * to configure and what to run.
  *
  */
-public class JsonListProcessor {
+public class JsonConfigProcessor {
     public static final String VERSION              = "1.0";
 
-    private static final Logger LOGGER                  = Logger.getLogger(JsonListProcessor.class);
+    private static final Logger LOGGER                  = Logger.getLogger(JsonConfigProcessor.class);
 
     public static void main(String[] args) {
         int exitStatus      = 0;
@@ -60,6 +60,8 @@ public class JsonListProcessor {
             config = new StandaloneJsonConfig(jsonConfigFile, args, stTag);
         } catch(Exception e) {
             LOGGER.error("main: Problem parsing the json configuration", e);
+
+            System.err.println("Problems parsing the configuration file: " + e.getLocalizedMessage());
 
             System.exit(3) ;
         }
@@ -207,9 +209,9 @@ public class JsonListProcessor {
     private static void showUsage(final int exitStatus, final String errMsg) {
         StringBuilder usage = new StringBuilder();
 
-        usage.append("Usage for JsonListProcessor - v" + VERSION + "\n");
+        usage.append("Usage for JsonConfigProcessor - v" + VERSION + "\n");
         usage.append("\n");
-        usage.append("JsonListProcessor config selector_tag {filter}\n");
+        usage.append("JsonConfigProcessor config selector_tag {filter}\n");
         usage.append("   config       = a JSON file containing commands to execute.\n");
         usage.append("   selector_tag = a tag (case insensitive) to select specific lines from the config file to execute.\n");
         usage.append("   filter       = optional pattern to (possibly) reduce the cmd lines selected for execution.\n");
@@ -226,20 +228,20 @@ public class JsonListProcessor {
         usage.append("   the line number filter MUST end with a sentinal " +  TestSelectionFilter.TEST_ID_SENTINAL + ".\n");
         usage.append("\n");
         usage.append("Examples:\n");
-        usage.append("   JsonListProcessor scripts.json dev\n");
-        usage.append("   JsonListProcessor scripts.json UAT\n");
-        usage.append("   JsonListProcessor scripts.json sit  " + TestSelectionFilter.PLAIN_FILTER_PREFIX + "jsp\n");
-        usage.append("   JsonListProcessor scripts.json PROD " + TestSelectionFilter.PLAIN_FILTER_PREFIX_INVERTED + "admin\n");
-        usage.append("   JsonListProcessor scripts.json sit  " + TestSelectionFilter.REGEX_FILTER_PREFIX + "a.+[\\d]{3}\n");
-        usage.append("   JsonListProcessor scripts.json QA " + TestSelectionFilter.REGEX_FILTER_PREFIX_INVERTED + "A.+Servlet.*\n");
+        usage.append("   JsonConfigProcessor scripts.json dev\n");
+        usage.append("   JsonConfigProcessor scripts.json UAT\n");
+        usage.append("   JsonConfigProcessor scripts.json sit  " + TestSelectionFilter.PLAIN_FILTER_PREFIX + "jsp\n");
+        usage.append("   JsonConfigProcessor scripts.json PROD " + TestSelectionFilter.PLAIN_FILTER_PREFIX_INVERTED + "admin\n");
+        usage.append("   JsonConfigProcessor scripts.json sit  " + TestSelectionFilter.REGEX_FILTER_PREFIX + "a.+[\\d]{3}\n");
+        usage.append("   JsonConfigProcessor scripts.json QA " + TestSelectionFilter.REGEX_FILTER_PREFIX_INVERTED + "A.+Servlet.*\n");
 
-        usage.append("   JsonListProcessor scripts.json qa   "
+        usage.append("   JsonConfigProcessor scripts.json qa   "
                 + TestSelectionFilter.TEST_ID_SENTINAL
                 + "37"
                 + TestSelectionFilter.TEST_ID_SENTINAL
                 + "\n");
 
-        usage.append("   JsonListProcessor scripts.json uat  "
+        usage.append("   JsonConfigProcessor scripts.json uat  "
                 + TestSelectionFilter.TEST_ID_SENTINAL
                 + "39"
                 + TestSelectionFilter.TEST_ID_SENTINAL

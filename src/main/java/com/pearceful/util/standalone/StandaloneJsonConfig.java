@@ -191,7 +191,7 @@ public class StandaloneJsonConfig {
                                 envronmentalVariables.put(varName, "" + threadPoolSize);
                                 break;
                             case "OS":
-                                if (JsonListProcessor.onWindows()) {
+                                if (JsonConfigProcessor.onWindows()) {
                                     envronmentalVariables.put(varName, "windows");
                                 } else {
                                     envronmentalVariables.put(varName, "unix");
