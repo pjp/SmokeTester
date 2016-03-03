@@ -1,4 +1,5 @@
 {
+  "comment": "Configuration file for the smoke tests",
   "setup": {
     "comment1" : "All the entries in this section are optional.",
     "comment2" : "For environmental_variables, you can change the names of the variables if needed.",
