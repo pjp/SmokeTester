@@ -115,9 +115,12 @@ public class StandaloneJsonConfig {
     }
 
     public static class JsonSetup {
+        public static final int DEFAULT_THREAD_POOL_SIZE    = 5;
+        public static final int DEFAULT_TIMEOUT_IN_SECONDS  = 600;
+
         private int timeoutSecondsForAllTests;
         private int threadPoolSize;
-        private Map<String, String> systemVariables = new HashMap<>();
+        private Map<String, String> envronmentalVariables = new HashMap<>();
         private String configFile;
         private String tag;
         private String[] cmdLineArgs;
@@ -125,7 +128,7 @@ public class StandaloneJsonConfig {
         @Override
         public String toString() {
             StringBuilder sysVars = new StringBuilder();
-            for(Map.Entry<String, String> sysVar : systemVariables.entrySet()) {
+            for(Map.Entry<String, String> sysVar : envronmentalVariables.entrySet()) {
                 sysVars.append(sysVar.getKey()).append("=").append(sysVar.getValue()).append(" ");
             }
 
@@ -136,7 +139,7 @@ public class StandaloneJsonConfig {
 
             return String.format(
                     "cmdLineArgs [%s], configFile [%s], tag [%s], timeoutSecondsForAllTests [%d], threadPoolSize [%d], " +
-                    "systemVariables [%s]",
+                    "environmentalVariables [%s]",
                     cmdLine,
                     configFile,
                     tag,
@@ -155,45 +158,47 @@ public class StandaloneJsonConfig {
             this.tag        = tag;
             this.cmdLineArgs= cmdLineArgs;
 
-            timeoutSecondsForAllTests                   = (int)config.getOrDefault("timeout_seconds_for_all_tests", 0);
-            threadPoolSize                              = (int)config.getOrDefault("thread_pool_size", 5);
-            List<Map<String, Object>> systemVars        = (List<Map<String, Object>>)config.get("system_variables");
+            timeoutSecondsForAllTests   = (int)config.getOrDefault("timeout_seconds_for_all_tests", DEFAULT_TIMEOUT_IN_SECONDS);
+            threadPoolSize              = (int)config.getOrDefault("thread_pool_size", DEFAULT_THREAD_POOL_SIZE);
 
-            if(null != systemVars && systemVars.size() > 0) {
-                for (Map<String, Object> systemVar : systemVars) {
-                    String varName = (String) systemVar.get("name");
+            List<Map<String, Object>> environmentalVariables
+                    = (List<Map<String, Object>>)config.get("environmental_variables");
 
-                    String varVal = (String) systemVar.get("internal_value");
+            if(null != environmentalVariables && environmentalVariables.size() > 0) {
+                for (Map<String, Object> envVar : environmentalVariables) {
+                    String varName = (String) envVar.get("name");
+
+                    String varVal = (String) envVar.get("internal_value");
                     if (null != varVal) {
                         switch (varVal) {
                             case "VERSION":
-                                systemVariables.put(varName, SmokeTestContext.VERSION);
+                                envronmentalVariables.put(varName, SmokeTestContext.VERSION);
                                 break;
                             case "CONFIG_FILE":
-                                systemVariables.put(varName, configFile);
+                                envronmentalVariables.put(varName, configFile);
                                 break;
                             case "CMD_LINE":
                                 StringBuilder sb = new StringBuilder();
                                 for (String arg : cmdLineArgs) {
                                     sb.append(arg).append(" ");
                                 }
-                                systemVariables.put(varName, sb.toString().trim());
+                                envronmentalVariables.put(varName, sb.toString().trim());
                                 break;
                             case "TIMEOUT":
-                                systemVariables.put(varName, "" + timeoutSecondsForAllTests);
+                                envronmentalVariables.put(varName, "" + timeoutSecondsForAllTests);
                                 break;
                             case "THREAD_POOL_SIZE":
-                                systemVariables.put(varName, "" + threadPoolSize);
+                                envronmentalVariables.put(varName, "" + threadPoolSize);
                                 break;
                             case "OS":
                                 if (JsonListProcessor.onWindows()) {
-                                    systemVariables.put(varName, "windows");
+                                    envronmentalVariables.put(varName, "windows");
                                 } else {
-                                    systemVariables.put(varName, "unix");
+                                    envronmentalVariables.put(varName, "unix");
                                 }
                                 break;
                             case "TAG":
-                                systemVariables.put(varName, tag);
+                                envronmentalVariables.put(varName, tag);
                                 break;
                             default:
                                 LOGGER.warn("constructor: Unknown \"internal_value\" [" + varVal + "]");
@@ -202,27 +207,27 @@ public class StandaloneJsonConfig {
                         continue;
                     }
 
-                    varVal = (String) systemVar.get("inline_value");
+                    varVal = (String) envVar.get("inline_value");
                     if (null != varVal) {
-                        systemVariables.put(varName, varVal);
+                        envronmentalVariables.put(varName, varVal);
                         continue;
                     }
 
-                    Map<String, String> valueMap = (Map<String, String>) systemVar.get("inline_value_from_matching_tag");
+                    Map<String, String> valueMap = (Map<String, String>) envVar.get("inline_value_from_matching_tag");
                     if (null != valueMap) {
                         ////////////////////////////////
                         // Find a match case insensitive
                         for (String key : valueMap.keySet()) {
                             if (key.equalsIgnoreCase(tag)) {
                                 varVal = valueMap.get(key);
-                                systemVariables.put(varName, varVal);
+                                envronmentalVariables.put(varName, varVal);
                             }
                         }
                         continue;
                     }
                 }
             } else {
-                LOGGER.info("constructor: No \"system_variables\" section defined.");
+                LOGGER.info("constructor: No \"environmental_variables\" section defined.");
             }
         }
 
@@ -246,8 +251,8 @@ public class StandaloneJsonConfig {
             return threadPoolSize;
         }
 
-        public Map<String, String> getSystemVariables() {
-            return systemVariables;
+        public Map<String, String> getEnvronmentalVariables() {
+            return envronmentalVariables;
         }
     }
 

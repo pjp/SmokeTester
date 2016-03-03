@@ -6,7 +6,6 @@ import com.pearceful.util.SmokeTestResult;
 import com.pearceful.util.SmokeTestStrategy;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Matcher;
@@ -106,7 +105,7 @@ public class JsonListProcessor {
                                 selected,
                                 passedFilter,
                                 testDef.getId(),
-                                config.setup.getSystemVariables(),
+                                config.setup.getEnvronmentalVariables(),
                                 testDef.getCmd()));
             }
 

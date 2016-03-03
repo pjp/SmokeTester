@@ -66,13 +66,13 @@ public class RawJsonConfigParseTest extends TestCase{
         // Top level Map
         Map setup = (Map)map.get("setup");
 
-        assertEquals(3, setup.size());
+        assertEquals(5, setup.size());
         assertTrue(setup.containsKey("timeout_seconds_for_all_tests"));
         assertTrue(setup.containsKey("thread_pool_size"));
-        assertTrue(setup.containsKey("system_variables"));
+        assertTrue(setup.containsKey("environmental_variables"));
 
         ///////////////////////
         // Check user variables
-        List variables = (List)setup.get("system_variables");
+        List variables = (List)setup.get("environmental_variables");
         assertEquals(9, variables.size());
     }}

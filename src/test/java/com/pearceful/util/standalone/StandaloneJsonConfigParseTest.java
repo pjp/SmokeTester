@@ -5,7 +5,6 @@ import junit.framework.TestCase;
 
 import javax.script.ScriptException;
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * Created by ppearce on 2016-02-28.
@@ -30,22 +29,22 @@ public class StandaloneJsonConfigParseTest extends TestCase {
         StandaloneJsonConfig config =   new StandaloneJsonConfig(jsonFile, cmdLineArgs, tag);
 
         assertEquals(600, config.setup.getTimeoutSecondsForAllTests());
-        assertEquals(2,   config.setup.getThreadPoolSize());
-        assertEquals(9,   config.setup.getSystemVariables().size());
+        assertEquals(5,   config.setup.getThreadPoolSize());
+        assertEquals(9,   config.setup.getEnvronmentalVariables().size());
 
-        assertEquals(jsonFile,                  config.setup.getSystemVariables().get("ST_CONFIG_FILE"));
-        assertEquals(tag,                       config.setup.getSystemVariables().get("ST_TAG"));
-        assertEquals(SmokeTestContext.VERSION,  config.setup.getSystemVariables().get("ST_VERSION"));
-        assertEquals("600",                     config.setup.getSystemVariables().get("ST_TIMEOUT"));
-        assertEquals("2",                       config.setup.getSystemVariables().get("ST_THREAD_POOL_SIZE"));
+        assertEquals(jsonFile,                  config.setup.getEnvronmentalVariables().get("ST_CONFIG_FILE"));
+        assertEquals(tag,                       config.setup.getEnvronmentalVariables().get("ST_TAG"));
+        assertEquals(SmokeTestContext.VERSION,  config.setup.getEnvronmentalVariables().get("ST_VERSION"));
+        assertEquals("600",                     config.setup.getEnvronmentalVariables().get("ST_TIMEOUT"));
+        assertEquals("5",                       config.setup.getEnvronmentalVariables().get("ST_THREAD_POOL_SIZE"));
 
-        assertEquals("Hello from DEV",  config.setup.getSystemVariables().get("ST_VALUE1"));
-        assertEquals("Howzit",          config.setup.getSystemVariables().get("ST_VALUE2"));
+        assertEquals("Hello from DEV",  config.setup.getEnvronmentalVariables().get("ST_VALUE1"));
+        assertEquals("Howzit",          config.setup.getEnvronmentalVariables().get("ST_VALUE2"));
 
         tag     =   "UAT";
         config  =    new StandaloneJsonConfig(jsonFile, cmdLineArgs, tag);
-        assertEquals(tag,                       config.setup.getSystemVariables().get("ST_TAG"));
-        assertEquals("Hello from UAT",          config.setup.getSystemVariables().get("ST_VALUE1"));
+        assertEquals(tag,                       config.setup.getEnvronmentalVariables().get("ST_TAG"));
+        assertEquals("Hello from UAT",          config.setup.getEnvronmentalVariables().get("ST_VALUE1"));
     }
 
     public void testReadConfigTest() throws IOException, ScriptException {

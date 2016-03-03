@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -62,7 +61,7 @@ public class JsonTestProcessor extends BaseSmokeTestStrategy {
 
             //////////////////////////////////////////
             // Set any bespoke environmental variables
-            env.putAll(setup.getSystemVariables());
+            env.putAll(setup.getEnvronmentalVariables());
 
             ////////////////////////////////////////////////////////////////
             // Actually execute the command line and wait for it to complete
