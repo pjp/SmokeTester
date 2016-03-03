@@ -86,8 +86,9 @@ public class StandaloneJsonConfigParseTest extends TestCase {
                 testDef.getCmd());
 
         assertEquals(StandaloneJsonConfig.JsonTestDefinition.RUN.IF_TAG_MATCHES, testDef.getRun());
-        assertEquals(1, testDef.getRunTags().size());
+        assertEquals(2, testDef.getRunTags().size());
         assertEquals("DEV", testDef.getRunTags().get(0));
+        assertEquals("SIT", testDef.getRunTags().get(1));
 
         ////////////////////////////////////////////////////////////////////////////////
         testDef = config.testDefinitions.get(3);

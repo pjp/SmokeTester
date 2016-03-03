@@ -36,8 +36,8 @@
       "cmd":"echo OS is [$ST_OS] with selector tag [$ST_TAG] and values [$ST_VALUE1], [$ST_VALUE2]"
     },
     "id2": {
-      "comment" : "Run this command if the tag passed on the command line matches 'DEV'",
-      "run" : {"if_tag_matches": ["DEV"]},
+      "comment" : "Run this command if the tag passed on the command line matches 'DEV' or 'SIT'",
+      "run" : {"if_tag_matches": ["DEV","SIT"]},
       "cmd":"hostname"
     },
     "id3": {
