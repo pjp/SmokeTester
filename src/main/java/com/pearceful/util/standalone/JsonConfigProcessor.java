@@ -222,10 +222,10 @@ public class JsonConfigProcessor {
         usage.append("      " + TestSelectionFilter.REGEX_FILTER_PREFIX_INVERTED + "cmd line does NOT contain this regex\n");
         usage.append("      " + TestSelectionFilter.PLAIN_FILTER_PREFIX + "cmd line contains this text\n");
         usage.append("      " + TestSelectionFilter.PLAIN_FILTER_PREFIX_INVERTED + "cmd line does NOT contain this text\n");
-        usage.append("      " + TestSelectionFilter.TEST_ID_SENTINAL + "match this(these) line number(s)" + TestSelectionFilter.TEST_ID_SENTINAL + "\n");
+        usage.append("      " + TestSelectionFilter.TEST_ID_SENTINAL + "match this(these) id('s)" + TestSelectionFilter.TEST_ID_SENTINAL + "\n");
         usage.append("\n");
         usage.append("   the filters are only applied if the line has ALREADY been selected by matching the selector tag.\n");
-        usage.append("   the line number filter MUST end with a sentinal " +  TestSelectionFilter.TEST_ID_SENTINAL + ".\n");
+        usage.append("   the id filter MUST end with a sentinal " +  TestSelectionFilter.TEST_ID_SENTINAL + ".\n");
         usage.append("\n");
         usage.append("Examples:\n");
         usage.append("   JsonConfigProcessor scripts.json dev\n");
@@ -237,15 +237,15 @@ public class JsonConfigProcessor {
 
         usage.append("   JsonConfigProcessor scripts.json qa   "
                 + TestSelectionFilter.TEST_ID_SENTINAL
-                + "37"
+                + "id1"
                 + TestSelectionFilter.TEST_ID_SENTINAL
                 + "\n");
 
         usage.append("   JsonConfigProcessor scripts.json uat  "
                 + TestSelectionFilter.TEST_ID_SENTINAL
-                + "39"
+                + "id2"
                 + TestSelectionFilter.TEST_ID_SENTINAL
-                + "47"
+                + "id3"
                 + TestSelectionFilter.TEST_ID_SENTINAL
                 + "\n");
 
