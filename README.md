@@ -19,6 +19,6 @@ See *SmokeTestContext.runSmokeTests* static method and the *SmokeTestContextTest
 
 For complete running sample implementations, see:-
 
-1) *ShellScriptListProcessor* class and the scripts.txt/run.sh/run.cmd files in the standalone package and directory.
+1) *TestLineConfigProcessor* class and the scripts.txt/run.sh/run.cmd files in the standalone package and directory.
 
 2) Newly added *JsonConfigProcessor* class and the sample-conf.json/jrun.sh/jrun.cmd files
