@@ -12,8 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 /**
  * Created by Paul Pearce on 2016-01-04.
@@ -25,14 +24,8 @@ import java.util.regex.Pattern;
  * to configure and what to run.
  *
  */
-public class ShellScriptListProcessor extends Processor {
+public class TextLineConfigProcessor extends ConfigProcessor {
     public static final String VERSION              = "1.1";
-    public static final String COMMENT_LEADER       = "#";
-    public static final String TAG_SENTINAL         = ":";
-    public static final String SELECTED_PREFIX      = "+";
-    public static final String NOT_SELECTED_PREFIX  = "-";
-    public static final String VALUE_SENTINAL       = "=";
-    public static final String GLOBAL_SENTINAL      = "@";
 
     public static final String ENV_VARIABLE_NAME_PREFIX_KEY = "st.env.name.prefix";
     public static final String ENV_VARIABLE_NAME_PREFIX     = "ST_";
@@ -45,7 +38,7 @@ public class ShellScriptListProcessor extends Processor {
     public static final String THREAD_POOL_SIZE     = "THREAD_POOL_SIZE";
     public static final int    INT_VALUE_NOT_SET    = -1;
 
-    private static final Logger LOGGER                  = Logger.getLogger(ShellScriptListProcessor.class);
+    private static final Logger LOGGER                  = Logger.getLogger(TextLineConfigProcessor.class);
     private static String envVariableNamePrefix         = ENV_VARIABLE_NAME_PREFIX;
 
     public static void main(String[] args) {
@@ -172,7 +165,7 @@ public class ShellScriptListProcessor extends Processor {
                     // Finally check if the line passed all checks to be executed
                     if(passedFilter) {
                         shellScripts.add(
-                                new ShellScriptProcessor(lineNumber, cmdLine, stTag, envValueToBeSet));
+                                new TextLineTestProcessor(lineNumber, cmdLine, stTag, envValueToBeSet));
                     }
                 }
 
@@ -252,9 +245,9 @@ public class ShellScriptListProcessor extends Processor {
     private static void showUsage(final int exitStatus, final String errMsg) {
         StringBuilder usage = new StringBuilder();
 
-        usage.append("Usage for ShellScriptListProcessor - v" + VERSION + "\n");
+        usage.append("Usage for TextLineConfigProcessor - v" + VERSION + "\n");
         usage.append("\n");
-        usage.append("ShellScriptListProcessor config selector_tag {filter}\n");
+        usage.append("TextLineConfigProcessor config selector_tag {filter}\n");
         usage.append("   config       = a file containing commands to execute.\n");
         usage.append("   selector_tag = a tag (case insensitive) to select specific lines from the config file to execute.\n");
         usage.append("   filter       = optional pattern to (possibly) reduce the cmd lines selected for execution.\n");
@@ -271,20 +264,20 @@ public class ShellScriptListProcessor extends Processor {
         usage.append("   the line number filter MUST end with a sentinal " +  TestSelectionFilter.TEST_ID_SENTINAL + ".\n");
         usage.append("\n");
         usage.append("Examples:\n");
-        usage.append("   ShellScriptListProcessor scripts.txt dev\n");
-        usage.append("   ShellScriptListProcessor scripts.txt UAT\n");
-        usage.append("   ShellScriptListProcessor scripts.txt sit  " + TestSelectionFilter.PLAIN_FILTER_PREFIX + "jsp\n");
-        usage.append("   ShellScriptListProcessor scripts.txt PROD " + TestSelectionFilter.PLAIN_FILTER_PREFIX_INVERTED + "admin\n");
-        usage.append("   ShellScriptListProcessor scripts.txt sit  " + TestSelectionFilter.REGEX_FILTER_PREFIX + "a.+[\\d]{3}\n");
-        usage.append("   ShellScriptListProcessor scripts.txt QA " + TestSelectionFilter.REGEX_FILTER_PREFIX_INVERTED + "A.+Servlet.*\n");
+        usage.append("   TextLineConfigProcessor scripts.txt dev\n");
+        usage.append("   TextLineConfigProcessor scripts.txt UAT\n");
+        usage.append("   TextLineConfigProcessor scripts.txt sit  " + TestSelectionFilter.PLAIN_FILTER_PREFIX + "jsp\n");
+        usage.append("   TextLineConfigProcessor scripts.txt PROD " + TestSelectionFilter.PLAIN_FILTER_PREFIX_INVERTED + "admin\n");
+        usage.append("   TextLineConfigProcessor scripts.txt sit  " + TestSelectionFilter.REGEX_FILTER_PREFIX + "a.+[\\d]{3}\n");
+        usage.append("   TextLineConfigProcessor scripts.txt QA " + TestSelectionFilter.REGEX_FILTER_PREFIX_INVERTED + "A.+Servlet.*\n");
 
-        usage.append("   ShellScriptListProcessor scripts.txt qa   "
+        usage.append("   TextLineConfigProcessor scripts.txt qa   "
                 + TestSelectionFilter.TEST_ID_SENTINAL
                 + "37"
                 + TestSelectionFilter.TEST_ID_SENTINAL
                 + "\n");
 
-        usage.append("   ShellScriptListProcessor scripts.txt uat  "
+        usage.append("   TextLineConfigProcessor scripts.txt uat  "
                 + TestSelectionFilter.TEST_ID_SENTINAL
                 + "39"
                 + TestSelectionFilter.TEST_ID_SENTINAL
@@ -301,97 +294,6 @@ public class ShellScriptListProcessor extends Processor {
         doExit(LOGGER, exitStatus);
     }
 
-    /**
-     * Determine if the line can be selected for execution
-     *
-     * @param lineNumber
-     * @param line The line from the input file
-     * @param tag
-     *
-     * @return true if the line can be executed; else false
-     */
-    protected static boolean lineToBeSelected(final int lineNumber, final String line, final String tag) {
-        if(null == line)        return false;
-
-        if(null == tag)         return false;
-
-        if(line.length() < 2)   return false;
-
-        ////////////////////////////////////////
-        // Extract the first token from the line
-        StringTokenizer st  = new StringTokenizer(line.toLowerCase());
-        if(st.hasMoreTokens()) {
-            String token = st.nextToken();
-
-            if (token.startsWith(COMMENT_LEADER + TAG_SENTINAL)) {
-                //////////////////
-                // Easy ones first
-                if (token.contains(TAG_SENTINAL + NOT_SELECTED_PREFIX + TAG_SENTINAL)) return false;
-                if (token.contains(TAG_SENTINAL + NOT_SELECTED_PREFIX + tag.toLowerCase() + TAG_SENTINAL)) return false;
-
-                if (token.contains(TAG_SENTINAL + SELECTED_PREFIX + TAG_SENTINAL)) return true;
-                if (token.contains(TAG_SENTINAL + tag.toLowerCase() + TAG_SENTINAL)) return true;
-                if (token.contains(TAG_SENTINAL + SELECTED_PREFIX + tag + TAG_SENTINAL)) return true;
-
-                ///////////////////////////////////////
-                // Hm, we have a combination of + and -
-                //
-                // build two lists, selected and not selected
-                List<String> selected = new ArrayList<>();
-                List<String> notSelected = new ArrayList<>();
-
-                StringTokenizer stSelected = new StringTokenizer(token.substring(1), ":");
-                while(stSelected.hasMoreTokens()) {
-                    String stToken = stSelected.nextToken();
-                    if(stToken.startsWith(NOT_SELECTED_PREFIX)) {
-                        notSelected.add(stToken.substring(1));
-                    } else {
-                        if(stToken.startsWith(SELECTED_PREFIX)) {
-                            selected.add(stToken.substring(1));
-                        } else {
-                            selected.add(stToken);
-                        }
-                    }
-                }
-
-                if(! selected.isEmpty()) {
-                    if(selected.contains(tag.toLowerCase())) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    protected static String valueToBeSelected(final String line, final String tag) {
-        if(null == line)        return null;
-
-        if(null == tag)         return null;
-
-        if(line.length() < 5)   return null;
-
-        if (line.startsWith(COMMENT_LEADER + VALUE_SENTINAL)) {
-            ////////////////////////////////////////
-            // Extract the first token from the line
-            StringTokenizer st = new StringTokenizer(line.substring(2), VALUE_SENTINAL);
-
-            if (st.countTokens() < 2) return null;
-
-            // Extract the tag and it's value
-            String stEnv = st.nextToken();
-            String value = line.substring(stEnv.length() + 1);
-
-            if (tag.toLowerCase().equals(stEnv.toLowerCase())) return value.substring(2);
-        }
-
-        return null;
-    }
 
     /**
      *

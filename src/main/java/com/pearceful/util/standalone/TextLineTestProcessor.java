@@ -23,22 +23,16 @@ import java.util.stream.Collectors;
  * will denote a failure of the test.
  *
  */
-public class ShellScriptProcessor extends BaseSmokeTestStrategy {
+public class TextLineTestProcessor extends BaseSmokeTestStrategy {
     private SmokeTestResult.STATE state = SmokeTestResult.STATE.USER_FAIL;
     private String cmdLine              = "";
     private String tag;
     private String envValue;
     private long elapsedNs              = 0 ;
     private String msg                  = "";
-    private static final Logger LOGGER                  = Logger.getLogger(ShellScriptProcessor.class);
+    private static final Logger LOGGER                  = Logger.getLogger(TextLineTestProcessor.class);
 
-    public static final String UNIX_SHELL           = "bash";
-    public static final String UNIX_SHELL_PARAM     = "-c";
-
-    public static final String WINDOWS_SHELL        = "cmd";
-    public static final String WINDOWS_SHELL_PARAM  = "/c";
-
-    public ShellScriptProcessor(
+    public TextLineTestProcessor(
             final int lineNumber,
             final String cmdLine,
             final String tag,
@@ -66,10 +60,10 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
             osName          = osName.toLowerCase(Locale.ENGLISH);
 
             if (osName.indexOf("windows") != -1) {
-                pb = new ProcessBuilder(WINDOWS_SHELL, WINDOWS_SHELL_PARAM, cmdLine);
+                pb = new ProcessBuilder(ConfigProcessor.WINDOWS_SHELL, ConfigProcessor.WINDOWS_SHELL_PARAM, cmdLine);
                 runningInWindows    = true;
             } else {
-                pb = new ProcessBuilder(UNIX_SHELL, UNIX_SHELL_PARAM, cmdLine);
+                pb = new ProcessBuilder(ConfigProcessor.UNIX_SHELL, ConfigProcessor.UNIX_SHELL_PARAM, cmdLine);
             }
 
             //////////////////////////////
@@ -152,7 +146,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
     protected void setEnvVariables(Map<String, String> env, boolean runningInWindows, String osName) {
         ///////////////////////////////////////////////
         // Add to the environment our bespoke variables
-        String key = ShellScriptListProcessor.buildEnvVariableName(ShellScriptListProcessor.ENV_VARIABLE_TAG_SUFFIX);
+        String key = TextLineConfigProcessor.buildEnvVariableName(TextLineConfigProcessor.ENV_VARIABLE_TAG_SUFFIX);
 
         String existingValue = env.putIfAbsent(key, tag);
 
@@ -162,7 +156,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
 
         /////////////////////////////
         if (null != envValue) {
-            key = ShellScriptListProcessor.buildEnvVariableName(ShellScriptListProcessor.ENV_VARIABLE_VALUE_SUFFIX);
+            key = TextLineConfigProcessor.buildEnvVariableName(TextLineConfigProcessor.ENV_VARIABLE_VALUE_SUFFIX);
 
             existingValue = env.putIfAbsent(key, envValue);
 
@@ -172,7 +166,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         }
 
         /////////////////////////////
-        key = ShellScriptListProcessor.buildEnvVariableName(ShellScriptListProcessor.ENV_VARIABLE_OS_SUFFIX);
+        key = TextLineConfigProcessor.buildEnvVariableName(TextLineConfigProcessor.ENV_VARIABLE_OS_SUFFIX);
 
         if(runningInWindows) {
             existingValue = env.putIfAbsent(key, "windows");
@@ -185,7 +179,7 @@ public class ShellScriptProcessor extends BaseSmokeTestStrategy {
         }
 
         /////////////////////////////
-        key = ShellScriptListProcessor.buildEnvVariableName(ShellScriptListProcessor.ENV_VARIABLE_LINE_SUFFIX);
+        key = TextLineConfigProcessor.buildEnvVariableName(TextLineConfigProcessor.ENV_VARIABLE_LINE_SUFFIX);
 
         existingValue = env.putIfAbsent(key, id);
 

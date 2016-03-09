@@ -1,6 +1,5 @@
 package com.pearceful.util.standalone;
 
-import com.pearceful.util.standalone.ShellScriptListProcessor;
 import junit.framework.TestCase;
 
 import static java.lang.Thread.sleep;
@@ -12,55 +11,55 @@ public class SelectorTest extends TestCase {
     public void testNullLeadingToken() {
         String line =   null ;
 
-        assertEquals("", ShellScriptListProcessor.stripLeadingToken(line));
+        assertEquals("", ConfigProcessor.stripLeadingToken(line));
     }
 
     public void testNoLeadingToken() {
         String line =   "" ;
 
-        assertEquals("", ShellScriptListProcessor.stripLeadingToken(line));
+        assertEquals("", ConfigProcessor.stripLeadingToken(line));
     }
 
     public void testNoLeadingTokenEmptyLine() {
         String line =   " " ;
 
-        assertEquals("", ShellScriptListProcessor.stripLeadingToken(line));
+        assertEquals("", ConfigProcessor.stripLeadingToken(line));
     }
 
     public void testNoLeadingTokenEmptyLineWithTab() {
         String line =   " \t " ;
 
-        assertEquals("\t ", ShellScriptListProcessor.stripLeadingToken(line));
+        assertEquals("\t ", ConfigProcessor.stripLeadingToken(line));
     }
 
     public void testLeadingTokenEmptyLine() {
         String line =   " a" ;
 
-        assertEquals("a", ShellScriptListProcessor.stripLeadingToken(line));
+        assertEquals("a", ConfigProcessor.stripLeadingToken(line));
     }
 
     public void testLeadingTokenEmptyLineWithTab() {
         String line =   " a\t" ;
 
-        assertEquals("a\t", ShellScriptListProcessor.stripLeadingToken(line));
+        assertEquals("a\t", ConfigProcessor.stripLeadingToken(line));
     }
 
     public void testLeadingTokenWithSmallRestOfLine() {
         String line =   "a b" ;
 
-        assertEquals("b", ShellScriptListProcessor.stripLeadingToken(line));
+        assertEquals("b", ConfigProcessor.stripLeadingToken(line));
     }
 
     public void testLeadingTokenWithLongRestOfLine() {
         String line =   "a b c " ;
 
-        assertEquals("b c ", ShellScriptListProcessor.stripLeadingToken(line));
+        assertEquals("b c ", ConfigProcessor.stripLeadingToken(line));
     }
 
     public void testLeadingTokenWithLongRestOfLineNoTrailingSpace() {
         String line =   "a b c d" ;
 
-        assertEquals("b c d", ShellScriptListProcessor.stripLeadingToken(line));
+        assertEquals("b c d", ConfigProcessor.stripLeadingToken(line));
     }
 
     public void testNullSelector() {
@@ -68,7 +67,7 @@ public class SelectorTest extends TestCase {
         int lineNumber  = 0;
         String env      = "";
 
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, env));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, env));
     }
 
     public void testEmptySelector() {
@@ -76,10 +75,10 @@ public class SelectorTest extends TestCase {
         int lineNumber  = 0;
         String env      = "";
 
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, env));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, env));
 
         line = " \t" ;
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, env));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, env));
     }
 
     public void testMustBeSelected() {
@@ -88,40 +87,40 @@ public class SelectorTest extends TestCase {
         String env      = "DEV";
         String cmd      = "echo Howzit";
 
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, env));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, env));
 
         ///////////////////////////////////////////////////
         line    = String.format("%s%s%s%s %s",
-                    ShellScriptListProcessor.COMMENT_LEADER,
-                    ShellScriptListProcessor.TAG_SENTINAL,
-                    ShellScriptListProcessor.SELECTED_PREFIX,
-                    ShellScriptListProcessor.TAG_SENTINAL,
+                    ConfigProcessor.COMMENT_LEADER,
+                    ConfigProcessor.TAG_SENTINAL,
+                    ConfigProcessor.SELECTED_PREFIX,
+                    ConfigProcessor.TAG_SENTINAL,
                     cmd);
 
-        assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "ANY_OLD"));
-        assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, env));
+        assertTrue(ConfigProcessor.lineToBeSelected(lineNumber, line, "ANY_OLD"));
+        assertTrue(ConfigProcessor.lineToBeSelected(lineNumber, line, env));
 
         ///////////////////////////////////////////////////
         line    = String.format("%s%s%s%s %s",
-                    ShellScriptListProcessor.COMMENT_LEADER,
-                    ShellScriptListProcessor.TAG_SENTINAL,
+                    ConfigProcessor.COMMENT_LEADER,
+                    ConfigProcessor.TAG_SENTINAL,
                     env,
-                    ShellScriptListProcessor.TAG_SENTINAL,
+                    ConfigProcessor.TAG_SENTINAL,
                     cmd);
 
-        assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, env));
+        assertTrue(ConfigProcessor.lineToBeSelected(lineNumber, line, env));
 
         ///////////////////////////////////////////////////
         line    = String.format("%s%s%s%s%s%s %s",
-                    ShellScriptListProcessor.COMMENT_LEADER,
-                    ShellScriptListProcessor.TAG_SENTINAL,
+                    ConfigProcessor.COMMENT_LEADER,
+                    ConfigProcessor.TAG_SENTINAL,
                     "DEV",
-                    ShellScriptListProcessor.TAG_SENTINAL,
+                    ConfigProcessor.TAG_SENTINAL,
                     "SIT",
-                    ShellScriptListProcessor.TAG_SENTINAL,
+                    ConfigProcessor.TAG_SENTINAL,
                     cmd);
 
-        assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "SIT"));
+        assertTrue(ConfigProcessor.lineToBeSelected(lineNumber, line, "SIT"));
     }
 
     public void testMustNotBeSelected() {
@@ -130,43 +129,43 @@ public class SelectorTest extends TestCase {
         String env      = "dev";
         String cmd      = "echo Howzit";
 
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, env));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, env));
 
         ///////////////////////////////////////////////////
         line    = String.format("%s-%s%s%s %s",
-                    ShellScriptListProcessor.COMMENT_LEADER,
-                    ShellScriptListProcessor.TAG_SENTINAL,
-                    ShellScriptListProcessor.NOT_SELECTED_PREFIX,
-                    ShellScriptListProcessor.TAG_SENTINAL,
+                    ConfigProcessor.COMMENT_LEADER,
+                    ConfigProcessor.TAG_SENTINAL,
+                    ConfigProcessor.NOT_SELECTED_PREFIX,
+                    ConfigProcessor.TAG_SENTINAL,
                     cmd);
 
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, env));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, env));
 
         ///////////////////////////////////////////////////
         line    = String.format("%s%s%s%s%s %s",
-                ShellScriptListProcessor.COMMENT_LEADER,
-                ShellScriptListProcessor.NOT_SELECTED_PREFIX,
-                ShellScriptListProcessor.TAG_SENTINAL,
+                ConfigProcessor.COMMENT_LEADER,
+                ConfigProcessor.NOT_SELECTED_PREFIX,
+                ConfigProcessor.TAG_SENTINAL,
                 env.toUpperCase(),
-                ShellScriptListProcessor.TAG_SENTINAL,
+                ConfigProcessor.TAG_SENTINAL,
                 cmd);
 
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, env));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, env));
 
         ///////////////////////////////////////////////////
         line    = String.format("%s%s%s%s%s%s %s",
-                ShellScriptListProcessor.COMMENT_LEADER,
-                ShellScriptListProcessor.TAG_SENTINAL,
-                ShellScriptListProcessor.NOT_SELECTED_PREFIX + "DEV",
-                ShellScriptListProcessor.TAG_SENTINAL,
-                ShellScriptListProcessor.NOT_SELECTED_PREFIX + "SIT",
-                ShellScriptListProcessor.TAG_SENTINAL,
+                ConfigProcessor.COMMENT_LEADER,
+                ConfigProcessor.TAG_SENTINAL,
+                ConfigProcessor.NOT_SELECTED_PREFIX + "DEV",
+                ConfigProcessor.TAG_SENTINAL,
+                ConfigProcessor.NOT_SELECTED_PREFIX + "SIT",
+                ConfigProcessor.TAG_SENTINAL,
                 cmd);
 
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "DEV"));
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "SIT"));
-        assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "UAT"));
-        assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "PROD"));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, "DEV"));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, "SIT"));
+        assertTrue(ConfigProcessor.lineToBeSelected(lineNumber, line, "UAT"));
+        assertTrue(ConfigProcessor.lineToBeSelected(lineNumber, line, "PROD"));
     }
 
     public void testSelectedAndNotSelected() {
@@ -176,20 +175,20 @@ public class SelectorTest extends TestCase {
 
         ///////////////////////////////////////////////////
         line    = String.format("%s%s%s%s%s%s%s%s %s",
-                ShellScriptListProcessor.COMMENT_LEADER,
-                ShellScriptListProcessor.TAG_SENTINAL,
-                ShellScriptListProcessor.NOT_SELECTED_PREFIX + "DEV",
-                ShellScriptListProcessor.TAG_SENTINAL,
+                ConfigProcessor.COMMENT_LEADER,
+                ConfigProcessor.TAG_SENTINAL,
+                ConfigProcessor.NOT_SELECTED_PREFIX + "DEV",
+                ConfigProcessor.TAG_SENTINAL,
                 "PROD",
-                ShellScriptListProcessor.TAG_SENTINAL,
-                ShellScriptListProcessor.NOT_SELECTED_PREFIX + "SIT",
-                ShellScriptListProcessor.TAG_SENTINAL,
+                ConfigProcessor.TAG_SENTINAL,
+                ConfigProcessor.NOT_SELECTED_PREFIX + "SIT",
+                ConfigProcessor.TAG_SENTINAL,
                 cmd);
 
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "DEV"));
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "SIT"));
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "UAT"));
-        assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "PROD"));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, "DEV"));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, "SIT"));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, "UAT"));
+        assertTrue(ConfigProcessor.lineToBeSelected(lineNumber, line, "PROD"));
     }
 
     public void testSelectedAndNotSelected2() {
@@ -199,19 +198,19 @@ public class SelectorTest extends TestCase {
 
         ///////////////////////////////////////////////////
         line    = String.format("%s%s%s%s%s%s %s",
-                ShellScriptListProcessor.COMMENT_LEADER,
-                ShellScriptListProcessor.TAG_SENTINAL,
-                ShellScriptListProcessor.NOT_SELECTED_PREFIX + "DEV",
-                ShellScriptListProcessor.TAG_SENTINAL,
-                ShellScriptListProcessor.NOT_SELECTED_PREFIX + "SIT",
-                ShellScriptListProcessor.TAG_SENTINAL,
+                ConfigProcessor.COMMENT_LEADER,
+                ConfigProcessor.TAG_SENTINAL,
+                ConfigProcessor.NOT_SELECTED_PREFIX + "DEV",
+                ConfigProcessor.TAG_SENTINAL,
+                ConfigProcessor.NOT_SELECTED_PREFIX + "SIT",
+                ConfigProcessor.TAG_SENTINAL,
                 cmd);
 
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "DEV"));
-        assertFalse(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "SIT"));
-        assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "UAT"));
-        assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "PROD"));
-        assertTrue(ShellScriptListProcessor.lineToBeSelected(lineNumber, line, "MickeyMouse"));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, "DEV"));
+        assertFalse(ConfigProcessor.lineToBeSelected(lineNumber, line, "SIT"));
+        assertTrue(ConfigProcessor.lineToBeSelected(lineNumber, line, "UAT"));
+        assertTrue(ConfigProcessor.lineToBeSelected(lineNumber, line, "PROD"));
+        assertTrue(ConfigProcessor.lineToBeSelected(lineNumber, line, "MickeyMouse"));
     }
 
     public void testEnvValueSelectorForNull() {
@@ -219,12 +218,12 @@ public class SelectorTest extends TestCase {
         String env      = "DEV";
         String cmd      = "echo Howzit";
 
-        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(line, null));
-        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(line, env));
+        assertEquals(null, ConfigProcessor.valueToBeSelected(line, null));
+        assertEquals(null, ConfigProcessor.valueToBeSelected(line, env));
 
         /////////////////////////////////////////
         line = "#:DEV: " + cmd;
-        assertEquals(null, ShellScriptListProcessor.valueToBeSelected(line, env));
+        assertEquals(null, ConfigProcessor.valueToBeSelected(line, env));
 
     }
     public void testEnvValueSelectorForValue() {
@@ -232,23 +231,23 @@ public class SelectorTest extends TestCase {
         String value    = "echo Howzit";
         String line     = String.format(
                 "%s%s%s%s%s",
-                ShellScriptListProcessor.COMMENT_LEADER,
-                ShellScriptListProcessor.VALUE_SENTINAL,
+                ConfigProcessor.COMMENT_LEADER,
+                ConfigProcessor.VALUE_SENTINAL,
                 env,
-                ShellScriptListProcessor.VALUE_SENTINAL,
+                ConfigProcessor.VALUE_SENTINAL,
                 value) ;
 
-        assertEquals(value, ShellScriptListProcessor.valueToBeSelected(line, env));
-        assertEquals(value, ShellScriptListProcessor.valueToBeSelected(line, env.toLowerCase()));
-        assertEquals(null,  ShellScriptListProcessor.valueToBeSelected(line, "SIT"));
+        assertEquals(value, ConfigProcessor.valueToBeSelected(line, env));
+        assertEquals(value, ConfigProcessor.valueToBeSelected(line, env.toLowerCase()));
+        assertEquals(null,  ConfigProcessor.valueToBeSelected(line, "SIT"));
     }
 
     public void testEmptyOrNullFilter() {
         String filterText   =   null;
 
         try {
-            Processor.TestSelectionFilter clf =
-                    new Processor.TestSelectionFilter(filterText);
+            ConfigProcessor.TestSelectionFilter clf =
+                    new ConfigProcessor.TestSelectionFilter(filterText);
 
             fail("Should have thrown an exception");
         } catch(Exception e) {}
@@ -257,8 +256,8 @@ public class SelectorTest extends TestCase {
         filterText  =   "";
 
         try {
-            Processor.TestSelectionFilter clf =
-                    new Processor.TestSelectionFilter(filterText);
+            ConfigProcessor.TestSelectionFilter clf =
+                    new ConfigProcessor.TestSelectionFilter(filterText);
 
             fail("Should have thrown an exception");
         } catch(Exception e) {}
@@ -269,8 +268,8 @@ public class SelectorTest extends TestCase {
         String cmdLine          =   "";
         int lineNumber          = 0;
 
-        Processor.TestSelectionFilter clf =
-                new Processor.TestSelectionFilter(rawFilterText);
+        ConfigProcessor.TestSelectionFilter clf =
+                new ConfigProcessor.TestSelectionFilter(rawFilterText);
 
         assertFalse(clf.isMatch(lineNumber, cmdLine));
 
@@ -279,24 +278,24 @@ public class SelectorTest extends TestCase {
         assertTrue(clf.isMatch(lineNumber, cmdLine));
 
         rawFilterText    =
-                String.format("%s ", Processor.TestSelectionFilter.PLAIN_FILTER_PREFIX);
-        clf = new Processor.TestSelectionFilter(rawFilterText);
+                String.format("%s ", ConfigProcessor.TestSelectionFilter.PLAIN_FILTER_PREFIX);
+        clf = new ConfigProcessor.TestSelectionFilter(rawFilterText);
         assertTrue(clf.isMatch(lineNumber, cmdLine));
 
         ////////////////////////////////////////////
         cmdLine = "One=two";
         rawFilterText    =
-                String.format("%s=", Processor.TestSelectionFilter.PLAIN_FILTER_PREFIX);
-        clf = new Processor.TestSelectionFilter(rawFilterText);
+                String.format("%s=", ConfigProcessor.TestSelectionFilter.PLAIN_FILTER_PREFIX);
+        clf = new ConfigProcessor.TestSelectionFilter(rawFilterText);
         assertTrue(clf.isMatch(lineNumber, cmdLine));
 
         ////////////////////////////////////////////
         cmdLine = "One=two";
         rawFilterText    =
                 String.format("%s0%s",
-                        Processor.TestSelectionFilter.TEST_ID_SENTINAL,
-                        Processor.TestSelectionFilter.TEST_ID_SENTINAL);
-        clf = new Processor.TestSelectionFilter(rawFilterText);
+                        ConfigProcessor.TestSelectionFilter.TEST_ID_SENTINAL,
+                        ConfigProcessor.TestSelectionFilter.TEST_ID_SENTINAL);
+        clf = new ConfigProcessor.TestSelectionFilter(rawFilterText);
         assertTrue(clf.isMatch(lineNumber, cmdLine));
         assertFalse(clf.isMatch(1, cmdLine));
 
@@ -304,11 +303,11 @@ public class SelectorTest extends TestCase {
         cmdLine = "One=two";
         rawFilterText    =
                 String.format("%s0%s2%s3%s",
-                        Processor.TestSelectionFilter.TEST_ID_SENTINAL,
-                        Processor.TestSelectionFilter.TEST_ID_SENTINAL,
-                        Processor.TestSelectionFilter.TEST_ID_SENTINAL,
-                        Processor.TestSelectionFilter.TEST_ID_SENTINAL);
-        clf = new Processor.TestSelectionFilter(rawFilterText);
+                        ConfigProcessor.TestSelectionFilter.TEST_ID_SENTINAL,
+                        ConfigProcessor.TestSelectionFilter.TEST_ID_SENTINAL,
+                        ConfigProcessor.TestSelectionFilter.TEST_ID_SENTINAL,
+                        ConfigProcessor.TestSelectionFilter.TEST_ID_SENTINAL);
+        clf = new ConfigProcessor.TestSelectionFilter(rawFilterText);
         assertTrue(clf.isMatch(lineNumber, cmdLine));
         assertFalse(clf.isMatch(1, cmdLine));
         assertTrue(clf.isMatch(2, cmdLine));
@@ -320,28 +319,28 @@ public class SelectorTest extends TestCase {
         int lineNumber          = 0;
 
         rawFilterText    =
-                String.format("%s ", Processor.TestSelectionFilter.PLAIN_FILTER_PREFIX_INVERTED);
-        Processor.TestSelectionFilter clf =
-                new Processor.TestSelectionFilter(rawFilterText);
+                String.format("%s ", ConfigProcessor.TestSelectionFilter.PLAIN_FILTER_PREFIX_INVERTED);
+        ConfigProcessor.TestSelectionFilter clf =
+                new ConfigProcessor.TestSelectionFilter(rawFilterText);
         assertFalse(clf.isMatch(lineNumber, cmdLine));
 
         ////////////////////////////////////////////
         cmdLine = "One=two";
         rawFilterText    =
-                String.format("%s=", Processor.TestSelectionFilter.PLAIN_FILTER_PREFIX_INVERTED);
-        clf = new Processor.TestSelectionFilter(rawFilterText);
+                String.format("%s=", ConfigProcessor.TestSelectionFilter.PLAIN_FILTER_PREFIX_INVERTED);
+        clf = new ConfigProcessor.TestSelectionFilter(rawFilterText);
         assertFalse(clf.isMatch(lineNumber, cmdLine));
 
     }
 
     public void testValidRegexFilter() {
         String rawFilterText    =
-                String.format("%s.*", Processor.TestSelectionFilter.REGEX_FILTER_PREFIX);
+                String.format("%s.*", ConfigProcessor.TestSelectionFilter.REGEX_FILTER_PREFIX);
         String cmdLine  =   " ";
         int lineNumber          = 0;
 
-        Processor.TestSelectionFilter clf =
-                new Processor.TestSelectionFilter(rawFilterText);
+        ConfigProcessor.TestSelectionFilter clf =
+                new ConfigProcessor.TestSelectionFilter(rawFilterText);
 
         assertTrue(clf.isMatch(lineNumber, cmdLine));
 
@@ -349,9 +348,9 @@ public class SelectorTest extends TestCase {
         rawFilterText   =
                 String.format(
                         "%s[0-9]+",
-                        Processor.TestSelectionFilter.REGEX_FILTER_PREFIX);
+                        ConfigProcessor.TestSelectionFilter.REGEX_FILTER_PREFIX);
 
-        clf = new Processor.TestSelectionFilter(rawFilterText);
+        clf = new ConfigProcessor.TestSelectionFilter(rawFilterText);
 
         cmdLine =   "play 123";
         assertTrue(clf.isMatch(lineNumber, cmdLine));
@@ -360,9 +359,9 @@ public class SelectorTest extends TestCase {
         rawFilterText   =
                 String.format(
                         "%s [A-z]{3}",
-                        Processor.TestSelectionFilter.REGEX_FILTER_PREFIX);
+                        ConfigProcessor.TestSelectionFilter.REGEX_FILTER_PREFIX);
 
-        clf = new Processor.TestSelectionFilter(rawFilterText);
+        clf = new ConfigProcessor.TestSelectionFilter(rawFilterText);
 
         cmdLine =   "play Six";
         assertTrue(clf.isMatch(lineNumber, cmdLine));
@@ -370,12 +369,12 @@ public class SelectorTest extends TestCase {
 
     public void testValidRegexFilterInverted() {
         String rawFilterText    =
-                String.format("%s.*", Processor.TestSelectionFilter.REGEX_FILTER_PREFIX_INVERTED);
+                String.format("%s.*", ConfigProcessor.TestSelectionFilter.REGEX_FILTER_PREFIX_INVERTED);
         String cmdLine  =   "";
         int lineNumber          = 0;
 
-        Processor.TestSelectionFilter clf =
-                new Processor.TestSelectionFilter(rawFilterText);
+        ConfigProcessor.TestSelectionFilter clf =
+                new ConfigProcessor.TestSelectionFilter(rawFilterText);
 
         assertFalse(clf.isMatch(lineNumber, cmdLine));
 
@@ -383,9 +382,9 @@ public class SelectorTest extends TestCase {
         rawFilterText   =
                 String.format(
                         "%s[0-9]+",
-                        Processor.TestSelectionFilter.REGEX_FILTER_PREFIX_INVERTED);
+                        ConfigProcessor.TestSelectionFilter.REGEX_FILTER_PREFIX_INVERTED);
 
-        clf = new Processor.TestSelectionFilter(rawFilterText);
+        clf = new ConfigProcessor.TestSelectionFilter(rawFilterText);
 
         cmdLine =   "play 123";
         assertFalse(clf.isMatch(lineNumber, cmdLine));
@@ -396,11 +395,11 @@ public class SelectorTest extends TestCase {
 
     public void testInvalidRegexFilter() {
         String rawFilterText    =
-                String.format("%s*", Processor.TestSelectionFilter.REGEX_FILTER_PREFIX);
+                String.format("%s*", ConfigProcessor.TestSelectionFilter.REGEX_FILTER_PREFIX);
 
         try {
-            Processor.TestSelectionFilter clf =
-                    new Processor.TestSelectionFilter(rawFilterText);
+            ConfigProcessor.TestSelectionFilter clf =
+                    new ConfigProcessor.TestSelectionFilter(rawFilterText);
 
             fail("Should have thrown an exception");
         } catch(Exception e) {}
