@@ -9,6 +9,9 @@ import java.util.regex.Pattern;
 
 /**
  * Created by ppearce on 2016-03-08.
+ *
+ *
+ * Common superclass with useful common methods
  */
 public abstract class Processor {
     /**
@@ -127,6 +130,10 @@ public abstract class Processor {
         System.exit(exitStatus);
     }
 
+    /**
+     *
+     * @return
+     */
     protected static boolean onWindows() {
         boolean onWindows = false;
 
@@ -172,6 +179,9 @@ public abstract class Processor {
         return restOfLine;
     }
 
+    /**
+     *
+     */
     static class TestSelectionFilter {
         public static final String REGEX_FILTER_PREFIX          =   "==";
         public static final String REGEX_FILTER_PREFIX_INVERTED =   "=!";
@@ -183,18 +193,34 @@ public abstract class Processor {
         String rawFilterText     = null;
         String plainFilterText   = null;
         boolean invertMatch      = false;
-        boolean lineNumberMatch  = false;
+        boolean idMatch          = false;
 
+        /**
+         *
+         * @param rawFilterText
+         */
         public TestSelectionFilter(final String rawFilterText) {
             this.rawFilterText  =   rawFilterText;
 
             setUp(rawFilterText);
         }
 
+        /**
+         *
+         * @param id
+         * @param text
+         * @return
+         */
         public boolean isMatch(final int id, final String text) {
             return isMatch("" + id, text);
         }
 
+        /**
+         *
+         * @param id
+         * @param text
+         * @return
+         */
         public boolean isMatch(final String id, final String text) {
             boolean matched =   false;
 
@@ -202,7 +228,7 @@ public abstract class Processor {
                 Matcher matcher =   regex.matcher(text);
                 matched         =   matcher.find();
             } else {
-                if(lineNumberMatch) {
+                if(idMatch) {
                     matched = plainFilterText.contains(
                             String.format(
                                     "%s%s%s",
@@ -221,6 +247,10 @@ public abstract class Processor {
             return matched;
         }
 
+        /**
+         *
+         * @param filterText
+         */
         protected void setUp(final String filterText) {
             if(null == filterText || filterText.length() < 1) {
                 throw new IllegalArgumentException("Null or empty filter text specified");
@@ -230,7 +260,7 @@ public abstract class Processor {
 
             if(filterText.startsWith(TEST_ID_SENTINAL)) {
                 plainFilterText = filterText;
-                lineNumberMatch = true;
+                idMatch = true;
 
             } else if(filterText.startsWith(REGEX_FILTER_PREFIX)) {
                 regex = Pattern.compile(filterText.substring(REGEX_FILTER_PREFIX.length()));
@@ -270,5 +300,4 @@ public abstract class Processor {
             }
         }
     }
-
 }
