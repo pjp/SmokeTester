@@ -53,7 +53,7 @@ public class ShellScriptListProcessor extends Processor {
         int threadPoolSize  = 5;
         int timeoutSeconds  = 600;
         String filter       = null;
-        LineFilter lineFilter   =   null;
+        TestSelectionFilter lineFilter   =   null;
 
         if(args.length < 2) {
             exitStatus      = 1;
@@ -67,7 +67,7 @@ public class ShellScriptListProcessor extends Processor {
         if(args.length > 2) {
             filter  = args[2];
 
-            lineFilter = new LineFilter(filter);
+            lineFilter = new TestSelectionFilter(filter);
         }
 
         if(null == stTag || stTag.trim().length() < 1) {
@@ -261,35 +261,35 @@ public class ShellScriptListProcessor extends Processor {
         usage.append("\n");
         usage.append("Notes:\n");
         usage.append("   the filter is of the format (1st characters denotes the type of filter):-\n");
-        usage.append("      " + LineFilter.REGEX_FILTER_PREFIX + "cmd line contains this regex\n");
-        usage.append("      " + LineFilter.REGEX_FILTER_PREFIX_INVERTED + "cmd line does NOT contain this regex\n");
-        usage.append("      " + LineFilter.PLAIN_FILTER_PREFIX + "cmd line contains this text\n");
-        usage.append("      " + LineFilter.PLAIN_FILTER_PREFIX_INVERTED + "cmd line does NOT contain this text\n");
-        usage.append("      " + LineFilter.LINE_NUMBER_SENTINAL + "match this(these) line number(s)" + LineFilter.LINE_NUMBER_SENTINAL + "\n");
+        usage.append("      " + TestSelectionFilter.REGEX_FILTER_PREFIX + "cmd line contains this regex\n");
+        usage.append("      " + TestSelectionFilter.REGEX_FILTER_PREFIX_INVERTED + "cmd line does NOT contain this regex\n");
+        usage.append("      " + TestSelectionFilter.PLAIN_FILTER_PREFIX + "cmd line contains this text\n");
+        usage.append("      " + TestSelectionFilter.PLAIN_FILTER_PREFIX_INVERTED + "cmd line does NOT contain this text\n");
+        usage.append("      " + TestSelectionFilter.TEST_ID_SENTINAL + "match this(these) line number(s)" + TestSelectionFilter.TEST_ID_SENTINAL + "\n");
         usage.append("\n");
         usage.append("   the filters are only applied if the line has ALREADY been selected by matching the selector tag.\n");
-        usage.append("   the line number filter MUST end with a sentinal " +  LineFilter.LINE_NUMBER_SENTINAL + ".\n");
+        usage.append("   the line number filter MUST end with a sentinal " +  TestSelectionFilter.TEST_ID_SENTINAL + ".\n");
         usage.append("\n");
         usage.append("Examples:\n");
         usage.append("   ShellScriptListProcessor scripts.txt dev\n");
         usage.append("   ShellScriptListProcessor scripts.txt UAT\n");
-        usage.append("   ShellScriptListProcessor scripts.txt sit  " + LineFilter.PLAIN_FILTER_PREFIX + "jsp\n");
-        usage.append("   ShellScriptListProcessor scripts.txt PROD " + LineFilter.PLAIN_FILTER_PREFIX_INVERTED + "admin\n");
-        usage.append("   ShellScriptListProcessor scripts.txt sit  " + LineFilter.REGEX_FILTER_PREFIX + "a.+[\\d]{3}\n");
-        usage.append("   ShellScriptListProcessor scripts.txt QA " + LineFilter.REGEX_FILTER_PREFIX_INVERTED + "A.+Servlet.*\n");
+        usage.append("   ShellScriptListProcessor scripts.txt sit  " + TestSelectionFilter.PLAIN_FILTER_PREFIX + "jsp\n");
+        usage.append("   ShellScriptListProcessor scripts.txt PROD " + TestSelectionFilter.PLAIN_FILTER_PREFIX_INVERTED + "admin\n");
+        usage.append("   ShellScriptListProcessor scripts.txt sit  " + TestSelectionFilter.REGEX_FILTER_PREFIX + "a.+[\\d]{3}\n");
+        usage.append("   ShellScriptListProcessor scripts.txt QA " + TestSelectionFilter.REGEX_FILTER_PREFIX_INVERTED + "A.+Servlet.*\n");
 
         usage.append("   ShellScriptListProcessor scripts.txt qa   "
-                + LineFilter.LINE_NUMBER_SENTINAL
+                + TestSelectionFilter.TEST_ID_SENTINAL
                 + "37"
-                + LineFilter.LINE_NUMBER_SENTINAL
+                + TestSelectionFilter.TEST_ID_SENTINAL
                 + "\n");
 
         usage.append("   ShellScriptListProcessor scripts.txt uat  "
-                + LineFilter.LINE_NUMBER_SENTINAL
+                + TestSelectionFilter.TEST_ID_SENTINAL
                 + "39"
-                + LineFilter.LINE_NUMBER_SENTINAL
+                + TestSelectionFilter.TEST_ID_SENTINAL
                 + "47"
-                + LineFilter.LINE_NUMBER_SENTINAL
+                + TestSelectionFilter.TEST_ID_SENTINAL
                 + "\n");
 
         String usageMsg    =   String.format("%s\n\n%s", errMsg, usage.toString());
@@ -400,100 +400,5 @@ public class ShellScriptListProcessor extends Processor {
      */
     protected static String buildEnvVariableName(final String suffix) {
         return envVariableNamePrefix + suffix;
-    }
-
-    static class LineFilter {
-        public static final String REGEX_FILTER_PREFIX          =   "==";
-        public static final String REGEX_FILTER_PREFIX_INVERTED =   "=!";
-        public static final String PLAIN_FILTER_PREFIX          =   "~=";
-        public static final String PLAIN_FILTER_PREFIX_INVERTED =   "~!";
-        public static final String LINE_NUMBER_SENTINAL         =   "#";
-
-        Pattern regex            = null;
-        String rawFilterText     = null;
-        String plainFilterText   = null;
-        boolean invertMatch      = false;
-        boolean lineNumberMatch  = false;
-
-        public LineFilter(final String rawFilterText) {
-            this.rawFilterText  =   rawFilterText;
-
-            setUp(rawFilterText);
-        }
-
-        public boolean isMatch(final int lineNumber, final String text) {
-            boolean matched =   false;
-
-            if(null != regex) {
-                Matcher matcher =   regex.matcher(text);
-                matched         =   matcher.find();
-            } else {
-                if(lineNumberMatch) {
-                    matched = plainFilterText.contains(
-                            String.format(
-                                    "%s%d%s",
-                                    LINE_NUMBER_SENTINAL,
-                                    lineNumber,
-                                    LINE_NUMBER_SENTINAL));
-                } else {
-                    matched = text.contains(plainFilterText);
-                }
-            }
-
-            if(invertMatch) {
-                matched = ! matched;
-            }
-
-            return matched;
-        }
-
-        protected void setUp(final String filterText) {
-            if(null == filterText || filterText.length() < 1) {
-                throw new IllegalArgumentException("Null or empty filter text specified");
-            }
-
-            rawFilterText = filterText;
-
-            if(filterText.startsWith(LINE_NUMBER_SENTINAL)) {
-                plainFilterText = filterText;
-                lineNumberMatch = true;
-
-            } else if(filterText.startsWith(REGEX_FILTER_PREFIX)) {
-                regex = Pattern.compile(filterText.substring(REGEX_FILTER_PREFIX.length()));
-
-            } else if(filterText.startsWith(REGEX_FILTER_PREFIX_INVERTED)) {
-                regex = Pattern.compile(filterText.substring(REGEX_FILTER_PREFIX_INVERTED.length()));
-                invertMatch =   true;
-
-            } else if(filterText.startsWith(PLAIN_FILTER_PREFIX)) {
-                if(filterText.length() < 3) {
-                    throw new IllegalArgumentException(
-                            "Invalid filter text specified [" + filterText + "]");
-                }
-                plainFilterText = filterText.substring(PLAIN_FILTER_PREFIX.length());
-
-            } else if(filterText.startsWith(PLAIN_FILTER_PREFIX_INVERTED)) {
-                if(filterText.length() < 3) {
-                    throw new IllegalArgumentException(
-                            "Invalid filter text specified [" + filterText + "]");
-                }
-                plainFilterText = filterText.substring(PLAIN_FILTER_PREFIX_INVERTED.length());
-                invertMatch =   true;
-
-            } else {
-                if(filterText.startsWith(PLAIN_FILTER_PREFIX)) {
-                    plainFilterText = filterText.substring(PLAIN_FILTER_PREFIX.length());
-                } else {
-                    ///////////////////////////
-                    // The default if no prefix
-                    plainFilterText = filterText;
-                }
-
-                if(plainFilterText.length() < 1) {
-                    throw new IllegalArgumentException(
-                            "Invalid filter text specified [" + filterText + "]");
-                }
-            }
-        }
     }
 }
